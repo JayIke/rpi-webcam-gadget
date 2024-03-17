@@ -1,6 +1,41 @@
 # Overview
 
-camera with a voice and brain
+## Top-level View
+(Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
+|
+| via USB 2.0 standard -- see Docs
+|
+(Host) Mac/Windows
+
+## TO DO:
+- Use ConfigFS framework to reconfigure our current pipeline from the tutorial ([the plug-and-play tutorial gives a solid stream but we need to reconfigure](https://gitlab.freedesktop.org/camera/uvc-gadget/))
+- 
+- [Video] Figure out which node will take care of post-processing (add features)
+-   do we have enough memory allocation?
+- [Audio] Avoid any processing --> sink straight to usb endpoint
+-   do i have to wait for video?
+
+## ConfigFS Framework (See Docs)
+- Purpose: Create gadget device, define attributes, and bind to a UDC driver. This is done by symbolic linking?
+```bash ln -s <src_dir> <target_dir>```
+- ConfigFS instantiates Kernel objects provided by SysFS (SysFS just responds to uevents? i think?)
+
+### Structure:
+TOP: Upper Layers (network, fs, block I/O)
+MID: Gadget Drivers (use gadget API, functions, end points (EPx)
+LOW: Peripheral Drivers (HW, mic, camera)
+
+# Helpful Commands
+```bash
+v4l2-ctl --all        # shows all recognized devices in pipeline
+systemctl list-sockets # see services
+systemctl --user status <service> # checks if named service is active or inactive, we might use these
+systemd # Starts and monitors system and user services!!!
+lsusb -v # shows usb hub info (how we identify with host)
+lsmod # shows all active modules and dependencies
+pstree # i believe this shows the systemd pipeline?
+dmesg # boot messages, useful if something didn't come up as expected
+```
 
 # Hardware Setup
 - Gadget Controller - Raspberry Pi Zero 2 W
