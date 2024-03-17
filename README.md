@@ -18,7 +18,9 @@
 
 ## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. This is done by symbolic linking?
-```bash ln -s <src_dir> <target_dir>```
+```bash
+ln -s <src_dir> <target_dir>
+```
 - ConfigFS instantiates Kernel objects provided by SysFS (SysFS just responds to uevents? i think?)
 
 ### Structure:
@@ -36,6 +38,58 @@ lsusb -v # shows usb hub info (how we identify with host)
 lsmod # shows all active modules and dependencies
 pstree # i believe this shows the systemd pipeline?
 dmesg # boot messages, useful if something didn't come up as expected
+```
+
+## In Progress
+1) overlay=dwc2 in config.txt 
+2) modprobe libcomposite
+3) set up USB gadgets via ConfigFS (place in /usr/bin/myusbgadget)
+
+```bash
+#!/bin/bash -e
+ 
+modprobe libcomposite
+ 
+cd /sys/kernel/config/usb_gadget/
+mkdir g && cd g
+ 
+echo 0x1d6b > idVendor  # Linux Foundation
+echo 0x0104 > idProduct # Multifunction Composite Gadget
+echo 0x0100 > bcdDevice # v1.0.0
+echo 0x0200 > bcdUSB    # USB 2.0
+ 
+mkdir -p strings/0x409
+echo "deadbeef00115599" > strings/0x409/serialnumber
+echo "irq5 labs"        > strings/0x409/manufacturer
+echo "Pi Zero Gadget"   > strings/0x409/product
+ 
+mkdir -p functions/acm.usb0    # serial
+mkdir -p functions/rndis.usb0  # network
+ 
+mkdir -p configs/c.1
+echo 250 > configs/c.1/MaxPower
+ln -s functions/rndis.usb0 configs/c.1/
+ln -s functions/acm.usb0   configs/c.1/
+ 
+udevadm settle -t 5 || :
+ls /sys/class/udc/ > UDC
+```
+3) write the systemd service and use ```bash systemctl enable myusbgadget```
+4) 
+```bash
+# /usr/lib/systemd/system/myusbgadget.service
+ 
+[Unit]
+Description=My USB gadget
+After=systemd-modules-load.service
+ 
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/myusbgadget
+ 
+[Install]
+WantedBy=sysinit.target
 ```
 
 # Hardware Setup
