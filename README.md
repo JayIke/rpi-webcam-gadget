@@ -1,12 +1,13 @@
 # Overview
 
 ## Top-level View
-(Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
+```
+|] (Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
 |
-| via USB 2.0 standard -- see Docs
+|] via USB 2.0 standard -- see Docs
 |
-(Host) Mac/Windows
-
+|] (Host) Mac/Windows
+```
 ## TO DO:
 - Use ConfigFS framework to reconfigure our current pipeline from the tutorial ([the plug-and-play tutorial gives a solid stream but we need to reconfigure](https://gitlab.freedesktop.org/camera/uvc-gadget/))
 - 
