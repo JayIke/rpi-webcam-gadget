@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-modprobe libcomposite
-
-#!/bin/bash -e
- 
+# This loads the module responsible for allowing USB Gadgets to be
+# configured through configfs, without which we can't connect to the
+# UVC gadget kernel driver
+echo "Loading composite module"
 modprobe libcomposite
  
 cd /sys/kernel/config/usb_gadget/
@@ -35,9 +35,9 @@ CONFIGFS="/sys/kernel/config"
 GADGET="$CONFIGFS/usb_gadget"
 VID="0x1d6b" # 0x1d6b (Linux Foundation)
 PID="0x0104" # idProduct = Multifunction Composite Gadget
-SERIAL="0123456789"
-MANUF=$(hostname)
-PRODUCT="Terror Cam"
+SERIAL="020406080"
+MANUF="RT-Lizard"
+PRODUCT="RPi Z2W Gadget"
 BOARD=$(strings /proc/device-tree/model)
 UDC=`ls /sys/class/udc` # will identify the 'first' UDC
 
