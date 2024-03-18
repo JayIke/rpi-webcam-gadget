@@ -10,15 +10,20 @@
 ```
 ## TO DO:
 - Use ConfigFS framework to reconfigure our current pipeline from the tutorial ([the plug-and-play tutorial gives a solid stream but we need to reconfigure](https://gitlab.freedesktop.org/camera/uvc-gadget/))
-- 
+ 
 - [Video] Figure out which node will take care of post-processing (add features)
--   do we have enough memory allocation?
+-   do we have enough memory allocated?
+  
 - [Audio] Avoid any processing --> sink straight to usb endpoint
 -   do i have to wait for video?
+-   using libav codec at the libav processing stage to combine PCM/wav audio low-res video
+-   send combined audio/video output to h.264 encoder then send
 
 ## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. This is done by symbolic linking?
-```bash
+
+
+``` bash
 CONFIGFS="/sys/kernel/config"
 GADGET="$CONFIGFS/usb_gadget"
 VID="0x1d6b" # 0x1d6b (Linux Foundation)
@@ -29,6 +34,7 @@ PRODUCT="Terror Cam"
 BOARD=$(strings /proc/device-tree/model)
 UDC=`ls /sys/class/udc` # will identify the 'first' UDC
 ```
+
 - ConfigFS instantiates Kernel objects provided by SysFS (SysFS just responds to uevents? i think?)
 
 ### Structure:
@@ -121,17 +127,14 @@ WantedBy=sysinit.target
   - BCLK  Connector Pin 12 GPIO 18
   - SEL   Connector Pin GND
  
-# Software
+# Audio Software
 
 Testing Paul's rpi-i2s-audio device tree overlay on (Debian12/Bookworm OS-lite - 6.6.21) 03/17/24
 
-## rpi-i2s-mic.dts
+rpi-i2s-mic.dts -> This is the overlay for a MEMs microphone, specifically the SPH0645 I2C MIC.
 
-This is the overlay for a MEMs microphone, specifically the SPH0645 I2C MIC.
-
-# Configuration and Test Procedures
-
-## Clone and Compile 
+## Configuration and Test Procedures
+ 
 ### Clone repo without history
 ``` bash
 cd ~
@@ -139,7 +142,7 @@ git clone --depth=1 https://github.com/JayIke/rpi-i2s-audio.git
 ```
 ### Compile device tree into device tree blob overlay
 ``` bash
-git clone --depth=1 https://github.com/JayIke/rpi-i2s-audio.git
+git clone --depth=1 https://github.com/JayIke/rpi-i2s-audio.git # this is forked from Paul's repo
 dtc  -I dts -O dtb -o rpi-i2s-mic.dtbo  rpi-i2s-mic.dts 
 sudo cp rpi-i2s-mic.dtbo /boot/firmware/overlays/.
 # just to be safe:
@@ -159,7 +162,8 @@ arecord -l && arecord -L
 ``` bash
 arecord -D mic -c 2 -r 48000 -f S32_LE -V stereo -v -t wav test.wav
 ```
-
+### Combine/sync to Video
+[rpicam-apps libav tutorial](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/camera/rpicam_apps_libav.adoc)
 
 ## i2s_audio_read_test.py
 
