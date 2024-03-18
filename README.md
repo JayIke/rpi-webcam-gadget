@@ -19,7 +19,15 @@
 ## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. This is done by symbolic linking?
 ```bash
-ln -s <src_dir> <target_dir>
+CONFIGFS="/sys/kernel/config"
+GADGET="$CONFIGFS/usb_gadget"
+VID="0x1d6b" # 0x1d6b (Linux Foundation)
+PID="0x0104" # idProduct = Multifunction Composite Gadget
+SERIAL="0123456789"
+MANUF=$(hostname)
+PRODUCT="Terror Cam"
+BOARD=$(strings /proc/device-tree/model)
+UDC=`ls /sys/class/udc` # will identify the 'first' UDC
 ```
 - ConfigFS instantiates Kernel objects provided by SysFS (SysFS just responds to uevents? i think?)
 
