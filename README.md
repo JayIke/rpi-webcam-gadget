@@ -8,6 +8,18 @@
 |
 |] (Host) Mac/Windows
 ```
+## Software Dependencies
+```
+Debian 12 - Software modules are installed either by apt package manager or github clone/build
+Apt Packages
+- 
+-
+Github
+-
+-
+
+Important: [Camera Tuning Guide](https://datasheets.raspberrypi.com/camera/raspberry-pi-camera-guide.pdf?_gl=1*ahfnux*_ga*Nzc4ODQ2NDAwLjE3MDk5NTExMTU.*_ga_22FD70LWDS*MTcxMDg4MzY0Ny40Ny4xLjE3MTA4ODU5MDMuMC4wLjA.)
+```
 ## TO DO:
 - Use ConfigFS framework to reconfigure our current pipeline from the tutorial ([the plug-and-play tutorial gives a solid stream but we need to reconfigure](https://gitlab.freedesktop.org/camera/uvc-gadget/))
  
