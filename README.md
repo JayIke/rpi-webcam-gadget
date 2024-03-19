@@ -140,6 +140,8 @@ WantedBy=sysinit.target
   - SEL   Connector Pin GND
  
 # Audio Software
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/4ce2cc78-517c-4827-904a-ae4a77075d87)
+
 
 Testing Paul's rpi-i2s-audio device tree overlay on (Debian12/Bookworm OS-lite - 6.6.21) 03/17/24
 
