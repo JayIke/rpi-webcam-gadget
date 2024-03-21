@@ -75,6 +75,10 @@ install `pipenv` to allow multiple environments and force dependencies to a sing
 ```bash
 sudo apt install python-pip
 pip install --user pipenv
+
+# might have to do this:
+export PYTHONUSERBASE=/myappenv
+python3 -m pip install --user pipenv
 ```
 
 1) overlay=dwc2 in config.txt 
