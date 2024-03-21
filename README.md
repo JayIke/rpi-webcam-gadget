@@ -1,7 +1,10 @@
 # Overview
 
-Is an embedded AI webcam even possible on the rpi Z2W?
+Is an embedded AI webcam even possible on the rpi Z2W? Yes.
 [Pi-Zero 2W 64-bit performance using AI features](https://qengineering.eu/install-64-os-on-raspberry-pi-zero-2.html)
+
+[Building on a laptop](https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/#:~:text=The%20Raspberry%20Pi%20kernel%20tree%20contains%20a%20number,stored%20in.dts%20file%20gets%20compiled%20into%20a.dtbo%20files.)
+
 ## Top-level View
 ```
 |] (Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
