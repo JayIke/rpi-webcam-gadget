@@ -70,7 +70,7 @@ dmesg # boot messages, useful if something didn't come up as expected
 
 3/20/24
 
-install `pip env` to allow multiple environments and force dependencies to a single python version
+install `pipenv` to allow multiple environments and force dependencies to a single python version
 : [pipenv install tutorial](https://devcamp.com/trails/development-environments/campsites/python-development-environment/guides/how-to-install-work-pipenv-linux)
 ```bash
 sudo apt install python-pip
