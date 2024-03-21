@@ -1,5 +1,7 @@
 # Overview
 
+Is an embedded AI webcam even possible on the rpi Z2W?
+[Pi-Zero 2W 64-bit performance using AI features](https://qengineering.eu/install-64-os-on-raspberry-pi-zero-2.html)
 ## Top-level View
 ```
 |] (Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
@@ -72,9 +74,18 @@ dmesg # boot messages, useful if something didn't come up as expected
 
 install `pipenv` to allow multiple environments and force dependencies to a single python version
 : [pipenv install tutorial](https://devcamp.com/trails/development-environments/campsites/python-development-environment/guides/how-to-install-work-pipenv-linux)
+
+Follow this: [User Guide - pip](https://pip.pypa.io/en/stable/user_guide/#user-installs_)
 ```bash
-sudo apt install python-pip
-pip install --user pipenv
+sudo apt install python3-pip
+cd /path/to/project
+
+python3 -m venv ./
+./bin/activate
+
+# break it and never update ever
+pip3 install --break-system-packages pipenv
+pip
 
 # might have to do this:
 export PYTHONUSERBASE=/myappenv
