@@ -64,8 +64,8 @@ sudo apt install -y libglib2.0-dev libgstreamer-plugins-base1.0-dev
 git clone https://git.libcamera.org/libcamera/libcamera.git
 cd libcamera
 meson setup build --buildtype=release -Dpipelines=rpi/vc4,rpi/pisp -Dipas=rpi/vc4,rpi/pisp -Dv4l2=true -Dgstreamer=enabled -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=enabled
-ninja -C build
-sudo ninja -C build install
+ninja -j 1 -C build # remove the -j 1 flag if it doesnt work
+sudo ninja -j 1 -C build install # remove - j 1 flag if it doesnt work
 
 # codeblocks
 sudo apt install codeblocks
