@@ -1,6 +1,7 @@
 # Overview
 
-Some helpful view/debug commands related to the project
+## Pipeline related debugging commands 
+
 ```bash (download)
 # ~/.bash_aliases
 #
