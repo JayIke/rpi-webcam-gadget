@@ -42,6 +42,68 @@ alias device-map='ls -R -L -i -c /dev/snd/ /dev/v4l/ /dev/bus /dev/video*'
 
 [Build Stuf (ignore)](https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/#:~:text=The%20Raspberry%20Pi%20kernel%20tree%20contains%20a%20number,stored%20in.dts%20file%20gets%20compiled%20into%20a.dtbo%20files.)
 
+[Gstreamer Bullseye Setup](https://qengineering.eu/install-gstreamer-1.18-on-raspberry-pi-4.html)
+## Software Dependencies
+```bash
+# Currently using -> 6.1.21-v7+ #1642 SMP Mon Apr  3 17:20:52 BST 2023 armv7l GNU/Linux
+
+# libcamera / rpicam
+sudo apt install -y libcamera-dev libjpeg-dev libtiff5-dev libpng-dev
+sudo apt install libavcodec-dev libavdevice-dev libavformat-dev libswresample-dev
+sudo apt install -y git
+
+# libcamera
+sudo apt install -y libboost-dev
+sudo apt install -y libgnutls28-dev openssl libtiff5-dev pybind11-dev
+# sudo apt install -y qtbase5-dev libqt5core5a libqt5gui5 libqt5widgets5 we don't need preview window
+sudo apt install -y meson cmake
+sudo apt install -y python3-yaml python3-ply
+sudo apt install -y libglib2.0-dev libgstreamer-plugins-base1.0-dev
+
+# build libcamera
+git clone https://git.libcamera.org/libcamera/libcamera.git
+cd libcamera
+meson setup build --buildtype=release -Dpipelines=rpi/vc4,rpi/pisp -Dipas=rpi/vc4,rpi/pisp -Dv4l2=true -Dgstreamer=enabled -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=enabled
+ninja -C build
+sudo ninja -C build install
+
+# codeblocks
+sudo apt install codeblocks
+
+# open-cv
+sudo apt install libopencv-dev
+sudo apt install python3-opencv
+
+#  v4l2-utils 
+sudo apt install v4l2loopback-dkms v4l2loopback-utils ffmpeg
+
+# Gstreamer for pipeline
+sudo apt install python3-pip python3-yaml libyaml-dev python3-ply python3-jinja2
+sudo apt install libx264-dev libjpeg-dev libgstreamer1.0-dev \
+     libgstreamer-plugins-base1.0-dev \
+     libgstreamer-plugins-bad1.0-dev \
+     gstreamer1.0-plugins-ugly \
+     gstreamer1.0-tools \
+     gstreamer1.0-gl \
+     gstreamer1.0-gtk3
+
+# Ignore this, reference only
+# git clone https://git.libcamera.org/libcamera/libcamera.git
+# cd libcamera
+# meson setup build
+# ninja -C build install
+
+# [Camera Tuning Guide](https://datasheets.raspberrypi.com/camera/raspberry-pi-camera-guide.pdf?_gl=1*ahfnux*_ga*Nzc4ODQ2NDAwLjE3MDk5NTExMTU.*_ga_22FD70LWDS*MTcxMDg4MzY0Ny40Ny4xLjE3MTA4ODU5MDMuMC4wLjA.)
+```
+
+## Current libcamera build
+```bash
+# If not already cloned:
+git clone https://git.libcamera.org/libcamera/libcamera.git
+cd libcamera
+meson setup build --buildtype=release -Dpipelines=rpi/vc4,rpi/pisp -Dipas=rpi/vc4,rpi/pisp -Dv4l2=true -Dgstreamer=enabled -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=enabled
+```
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/b1378ccc-cc5f-4543-8d9f-a0a411360ea3)
 ## Connection Scheme
 ```
 |] (Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
@@ -50,18 +112,7 @@ alias device-map='ls -R -L -i -c /dev/snd/ /dev/v4l/ /dev/bus /dev/video*'
 |
 |] (Host) Mac/Windows
 ```
-## Software Dependencies
-```
-6.1.21-v7+ #1642 SMP Mon Apr  3 17:20:52 BST 2023 armv7l GNU/Linux
-apt
-git
-python3-pip
-tbd
--
--
 
-Important: [Camera Tuning Guide](https://datasheets.raspberrypi.com/camera/raspberry-pi-camera-guide.pdf?_gl=1*ahfnux*_ga*Nzc4ODQ2NDAwLjE3MDk5NTExMTU.*_ga_22FD70LWDS*MTcxMDg4MzY0Ny40Ny4xLjE3MTA4ODU5MDMuMC4wLjA.)
-```
 ## TO DO:
 - Use ConfigFS framework to reconfigure our current pipeline from the tutorial [the plug-and-play tutorial gives a solid stream but we need to reconfigure](https://gitlab.freedesktop.org/camera/uvc-gadget/)
 - Important: [Camera Tuning Guide](https://datasheets.raspberrypi.com/camera/raspberry-pi-camera-guide.pdf?_gl=1*ahfnux*_ga*Nzc4ODQ2NDAwLjE3MDk5NTExMTU.*_ga_22FD70LWDS*MTcxMDg4MzY0Ny40Ny4xLjE3MTA4ODU5MDMuMC4wLjA.)
