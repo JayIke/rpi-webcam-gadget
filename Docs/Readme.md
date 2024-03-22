@@ -1,4 +1,4 @@
-# Resource Links
+# Resource Links (Other Readme is prob more helpful)
 
  ## Host Side USB
   - [IRQ - interrupt requests](https://www.techtarget.com/whatis/definition/IRQ-interrupt-request)
