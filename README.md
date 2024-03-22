@@ -1,4 +1,4 @@
-# Overview
+# Resources
 
 ## Pipeline related debugging commands 
 
@@ -42,7 +42,7 @@ alias device-map='ls -R -L -i -c /dev/snd/ /dev/v4l/ /dev/bus /dev/video*'
 
 [Build Stuf (ignore)](https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/#:~:text=The%20Raspberry%20Pi%20kernel%20tree%20contains%20a%20number,stored%20in.dts%20file%20gets%20compiled%20into%20a.dtbo%20files.)
 
-## Top-level View
+## Connection Scheme
 ```
 |] (Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
 |
@@ -52,11 +52,11 @@ alias device-map='ls -R -L -i -c /dev/snd/ /dev/v4l/ /dev/bus /dev/video*'
 ```
 ## Software Dependencies
 ```
-Debian 12 - Software modules are installed either by apt package manager or github clone/build
-Apt Packages
-- 
--
-Github
+6.1.21-v7+ #1642 SMP Mon Apr  3 17:20:52 BST 2023 armv7l GNU/Linux
+apt
+git
+python3-pip
+tbd
 -
 -
 
@@ -72,6 +72,7 @@ Important: [Camera Tuning Guide](https://datasheets.raspberrypi.com/camera/raspb
 -   do i have to wait for video?
 -   using libav codec at the libav processing stage to combine PCM/wav audio low-res video
 -   send combined audio/video output to h.264 encoder then send
+-   ffffffffffffffffffffffffffffffffffffff
 
 ## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. This is done by symbolic linking?
