@@ -1,9 +1,45 @@
 # Overview
 
-Is an embedded AI webcam even possible on the rpi Z2W? Yes.
-[Pi-Zero 2W 64-bit performance using AI features](https://qengineering.eu/install-64-os-on-raspberry-pi-zero-2.html)
+Some helpful view/debug commands related to the project
+```bash (download)
+# ~/.bash_aliases
+#
+# Enable a bash alias file:
+# 1) place this file in ~/.bash_aliases
+# 2) cd ~
+# 3) source ~/.bashrc
+#
+# Example: device-map
+# Outputs: prints paths, id nodes, and links of sound v4l and video devices (pipeline related)
+#
+# RPI Z2W AI Webcam Project
+# AI, Video and Audio
 
-[Building on a laptop](https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/#:~:text=The%20Raspberry%20Pi%20kernel%20tree%20contains%20a%20number,stored%20in.dts%20file%20gets%20compiled%20into%20a.dtbo%20files.)
+# Show camera devices v4l recognizes
+alias show-video='v4l2-ctl --list-devices'
+
+# Show audio capture and playback soundcards
+alias show-audio='arecord -l && aplay -l'
+
+# Start audio capture 2-channel,48kHz sample rate, signed 32-bit little endian format, save to wave
+alias capture-audio='arecord -D plughw:0,0 -c 2 -r 48000 -f s32_le -t wav cap_audio.wav'
+
+# show system devices
+alias show-units='systemctl list-units'
+
+# search for relevant modules
+alias show-modules='lsmod | grep -iE "snd|g_|usb|uvc|vid|audio|sound|i2s|gadget|camera|lib"'
+
+# show size and classifcation of files in directory - column
+alias lt='ls --human-readable --size -1 -S --classify'
+
+# shows device path, link, id node, and
+alias device-map='ls -R -L -i -c /dev/snd/ /dev/v4l/ /dev/bus /dev/video*'
+```
+
+[Pi-Zero 2W AI Benchmarks](https://qengineering.eu/install-64-os-on-raspberry-pi-zero-2.html)
+
+[Build Stuf (ignore)](https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/#:~:text=The%20Raspberry%20Pi%20kernel%20tree%20contains%20a%20number,stored%20in.dts%20file%20gets%20compiled%20into%20a.dtbo%20files.)
 
 ## Top-level View
 ```
