@@ -97,13 +97,19 @@ sudo apt install libx264-dev libjpeg-dev libgstreamer1.0-dev \
 ```
 
 ## Current libcamera build
+[libcamera/rpicam build tutorial](https://www.raspberrypi.com/documentation/computers/camera_software.html#building-libcamera-and-rpicam-apps)
 ```bash
 # If not already cloned:
 git clone https://git.libcamera.org/libcamera/libcamera.git
 cd libcamera
 meson setup build --buildtype=release -Dpipelines=rpi/vc4,rpi/pisp -Dipas=rpi/vc4,rpi/pisp -Dv4l2=true -Dgstreamer=enabled -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=enabled
 ```
-![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/b1378ccc-cc5f-4543-8d9f-a0a411360ea3)
+![image=](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/b1378ccc-cc5f-4543-8d9f-a0a411360ea3)
+
+## Current rpicam build
+
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/d58ee568-9849-4d96-89cb-db1fbe7f25d8)
+
 ## Connection Scheme
 ```
 |] (Peripheral/Gadget(s) Device) Pi Zero 2W + Camera + I2S Mic 
