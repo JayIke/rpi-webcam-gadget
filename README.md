@@ -177,6 +177,8 @@ install `pipenv` to allow multiple environments and force dependencies to a sing
 : [pipenv install tutorial](https://devcamp.com/trails/development-environments/campsites/python-development-environment/guides/how-to-install-work-pipenv-linux)
 
 Follow this: [User Guide - pip](https://pip.pypa.io/en/stable/user_guide/#user-installs_)
+
+Note: probably no need to do this on bullseye (this was for bookworm)
 ```bash
 sudo apt install python3-pip
 cd /path/to/project
@@ -185,7 +187,7 @@ python3 -m venv ./
 ./bin/activate
 
 # break it and never update ever
-pip3 install --break-system-packages pipenv
+pip3 install --break-system-packages pipenv 
 pip
 
 # might have to do this:
@@ -266,6 +268,7 @@ WantedBy=sysinit.target
   - SEL   Connector Pin GND
  
 # Audio Software
+[Microphone Installation/Tutorial](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test)
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/4ce2cc78-517c-4827-904a-ae4a77075d87)
 
 
