@@ -1,4 +1,5 @@
 # Resources
+[A hopeful ffmpeg tutorial](https://json2video.com/how-to/ffmpeg-course/ffmpeg-add-audio-to-video.html)
 
 ## Pipeline related debugging commands 
 
