@@ -1,5 +1,9 @@
 # Resources
 [A hopeful ffmpeg tutorial](https://json2video.com/how-to/ffmpeg-course/ffmpeg-add-audio-to-video.html)
+[Image Signal Processor - ISP Overview](https://www.utmel.com/blog/categories/integrated%20circuit/what-is-isp-image-signal-processor)
+
+## v4l2 
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/6425d938-8c80-4f28-bade-58a7b78f6aa2)
 
 ## Pipeline related debugging commands 
 
