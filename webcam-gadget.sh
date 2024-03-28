@@ -1,45 +1,40 @@
-#!/bin/bash -e
+#!/bin/bash
+
+# Referencing: https://developer.ridgerun.com/wiki/index.php/How_to_use_the_UVC_gadget_driver_in_Linux#Configuring_UVC_function
+# Official kernel docs: https://www.kernel.org/doc/html/v5.5/usb/gadget-testing.html#uac2-function
 
 # This loads the module responsible for allowing USB Gadgets to be
 # configured through configfs, without which we can't connect to the
 # UVC gadget kernel driver
 echo "Loading composite module"
 modprobe libcomposite
- 
-cd /sys/kernel/config/usb_gadget/
-mkdir g && cd g
- 
-echo 0x1d6b > idVendor  # Linux Foundation
-echo 0x0104 > idProduct # Multifunction Composite Gadget
-echo 0x0100 > bcdDevice # v1.0.0
-echo 0x0200 > bcdUSB    # USB 2.0
- 
-mkdir -p strings/0x409
-echo "deadbeef00115599" > strings/0x409/serialnumber
-echo "irq5 labs"        > strings/0x409/manufacturer
-echo "Pi Zero Gadget"   > strings/0x409/product
- 
-mkdir -p functions/acm.usb0    # serial
-mkdir -p functions/rndis.usb0  # network
- 
-mkdir -p configs/c.1
-echo 250 > configs/c.1/MaxPower
-ln -s functions/rndis.usb0 configs/c.1/
-ln -s functions/acm.usb0   configs/c.1/
- 
-udevadm settle -t 5 || :
-ls /sys/class/udc/ > UDC
-# Variables we need to make things easier later on.
 
+UDC=`ls /sys/class/udc`
+#UDC_ROLE=/sys/devices/platform/soc/78d9000.usb/ci_hdrc.0/role
 CONFIGFS="/sys/kernel/config"
 GADGET="$CONFIGFS/usb_gadget"
-VID="0x1d6b" # 0x1d6b (Linux Foundation)
-PID="0x0104" # idProduct = Multifunction Composite Gadget
-SERIAL="020406080"
-MANUF="RT-Lizard"
-PRODUCT="RPi Z2W Gadget"
-BOARD=$(strings /proc/device-tree/model)
-UDC=`ls /sys/class/udc` # will identify the 'first' UDC
+VID="0x0525"
+PID="0x0102"		# Or try "0xa4a2"
+SERIAL="0123456789"
+MANUF=$(hostname)
+PRODUCT="UVC Gadget"
+
+# Create the gadget
+mkdir -p $GADGET/g1			# UDC, bDeviceClass, bDeviceSubclass, bMaxPacketSize0, bcdDevice, bcdDevice,
+					# bcdUSB, configs, functions, idProduct, idVendor, os_desc, strings
+
+# Set vendor and product ID
+cd $GADGET/g1
+echo $VID > idVendor
+echo $PID > idProduct
+
+# Create english string
+mkdir -p strings/0x409			# manufacturer, product, serialnumber
+
+# Add manufacturer, serial number, and product information
+echo $SERIAL > strings/0x409/serialnumber
+echo $MANUF > strings/0x409/manufacturer
+echo $PRODUCT > strings/0x409/product
 
 # Later on, this function is used to tell the usb subsystem that we want
 # to support a particular format, framesize and frameintervals
@@ -136,88 +131,49 @@ create_uvc() {
 	ln -s functions/$FUNCTION configs/c.1
 }
 
-# This loads the module responsible for allowing USB Gadgets to be
-# configured through configfs, without which we can't connect to the
-# UVC gadget kernel driver
-echo "Loading composite module"
-modprobe libcomposite
+# Create configuration
+echo "Creating configs --> configs/c.1"
+mkdir configs/c.1			# MaxPower, bmAttributes, strings
 
-cd /sys/kernel/config/usb_gadget/
-mkdir g && cd g
+# Create english string for configuration
+echo "Setting English strings"
+mkdir configs/c.1/strings/0x409		# configuration
 
-echo 0x1d6b > idVendor  # Linux Foundation
-echo 0x0104 > idProduct # Multifunction Composite Gadget
-echo 0x0100 > bcdDevice # v1.0.0
-echo 0x0200 > bcdUSB    # USB 2.0
+# Create UVC functions --> UVC for video USB video class
+echo "Creating UVC functions..."
+create_uvc configs/c.1 uvc.0
+#CONFIG="configs/c.1"
+echo "uvc.0 functions OK"
 
-mkdir -p strings/0x409
-echo "deadbeef00115599" > strings/0x409/serialnumber
-echo "irq5 labs"        > strings/0x409/manufacturer
-echo "Pi Zero Gadget"   > strings/0x409/product
+cd $GADGET/g1
 
-mkdir -p functions/acm.usb0    # serial
-mkdir -p functions/rndis.usb0  # network
+# Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
+echo "Creating UAC1 functions..."
+AUDIO="uac1.0"				
+mkdir functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+echo "uac1.0 functions OK"
 
-mkdir -p configs/c.1
-echo 250 > configs/c.1/MaxPower
-ln -s functions/rndis.usb0 configs/c.1/
-ln -s functions/acm.usb0   configs/c.1/
+# Assigning configuration to functions
+echo "Assigning configuration c.1 to audio functions uac1.0..."
+ln -s functions/$AUDIO configs/c.1
 
-udevadm settle -t 5 || :
-ls /sys/class/udc/ > UDC
-# This section configures the gadget through configfs. We need to
-# create a bunch of files and directories that describe the USB
-# device we want to pretend to be.
+# cd /config/usb_gadget/g1/functions/uvc.0
 
-if
-[ ! -d $GADGET/g1 ]; then
-	echo "Detecting platform:"
-	echo "  board : $BOARD"
-	echo "  udc   : $UDC"
+echo "Binding USB Device Controller..."
+echo $UDC > UDC
+echo "Bounded to udc : $UDC"
 
-	echo "Creating the USB gadget"
+# Add resolutions
+#mkdir -p functions/$FUNCTION/streaming/uncompressed/u/360p
 
-	echo "Creating gadget directory g1"
-	mkdir -p $GADGET/g1
+# ls functions/uvc.0/streaming/
+# class  color_matching  header  mjpeg  uncompressed
 
-	cd $GADGET/g1
-	if
-[ $? -ne 0 ]; then
-		echo "Error creating usb gadget in configfs"
-		exit 1;
-	else
-		echo "OK"
-	fi
+# ls functions/uvc.0/streaming/uncompressed/u/
+# 360p  bAspectRatioX  bAspectRatioY  bBitsPerPixel  bDefaultFrameIndex  bmInterfaceFlags  bmaControls  guidForma
 
-	echo "Setting Vendor and Product ID's"
-	echo $VID > idVendor
-	echo $PID > idProduct
-	echo "OK"
+#ls functions/uvc.0/streaming/uncompressed/u/360p/
+# bmCapabilities dwDefaultFrameInterval	dwFrameInterval  dwMaxBitRate  dwMaxVideoFrameBufferSize  dwMinBitRate	wHeight  wWidth
 
-	echo "Setting English strings"
-	mkdir -p strings/0x409
-	echo $SERIAL > strings/0x409/serialnumber
-	echo $MANUF > strings/0x409/manufacturer
-	echo $PRODUCT > strings/0x409/product
-	echo "OK"
 
-	echo "Creating Config"
-	mkdir configs/c.1
-	mkdir configs/c.1/strings/0x409
-
-	echo "Creating functions..."
-
-	create_uvc configs/c.1 uvc.0
-
-	echo "OK"
-
-	echo "Binding USB Device Controller"
-	echo $UDC > UDC
-	echo "OK"
-fi
-
-# Run uvc-gadget. The -c flag sets libcamera as a source, arg 0 selects
-# the first available camera on the system. All cameras will be listed,
-# you can re-run with -c n to select camera n or -c ID to select via
-# the camera ID.
-uvc-gadget -c 0 uvc.0
+#udevadm settle -t 5 || :
