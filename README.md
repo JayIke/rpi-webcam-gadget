@@ -195,6 +195,22 @@ dmesg # boot messages, useful if something didn't come up as expected
   - SEL   Connector Pin GND
  
 # Audio Software
+
+```bash
+# Working in mono config:
+sudo nano /boot/config.txt # uncomment dtparam=i2s=on (i enabled the i2c_arm and spi params as well)
+git clone https://github.com/PaulCreaser/rpi-i2s-audio
+cd rpi-i2s-audio/
+sudo nano my_loader.c # Change dma_engine=bcm2708-dmaengine to dma_engine=bcm2709-dmaengine
+# install latest kernel headers if necessary
+sudo apt-get raspberrypi-kernel-headers
+# build my_loader module
+make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
+sudo insmod my_loader.ko
+# may need to reboot and insmod again
+# i believe this would call my_loader on boot:
+echo "my_loader" | sudo tee -a /etc/modules
+```
 [Microphone Installation/Tutorial](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test)
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/4ce2cc78-517c-4827-904a-ae4a77075d87)
 
