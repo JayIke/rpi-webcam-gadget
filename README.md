@@ -73,7 +73,7 @@ cd rpi-i2s-audio/
 sudo nano my_loader.c
 
 # install latest kernel headers if necessary
-sudo apt-get raspberrypi-kernel-headers
+sudo apt-get install raspberrypi-kernel-headers
 
 # build my_loader module
 make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
