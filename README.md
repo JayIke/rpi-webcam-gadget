@@ -7,7 +7,7 @@ Materials:
 4. Cables - Micro-USB Power and Micro-USB 2.0 Data
 
 ## Sequence Diagram
-More like a block diagram, but who cares
+More like a block diagram
 ```mermaid
 sequenceDiagram
 box Blue Hardware (Peripherals)
