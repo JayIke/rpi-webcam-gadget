@@ -7,7 +7,7 @@ Materials:
 4. Cables - Micro-USB Power and Micro-USB 2.0 Data
 
 ## Sequence Diagram
-
+More like a block diagram, but who cares
 ```mermaid
 sequenceDiagram
 box Blue Hardware (Peripherals)
@@ -29,6 +29,14 @@ Gadget Drivers-->USB Device Controller (UDC): Video/Audio Pipeline
 Note over Device Drivers,USB Device Controller (UDC): Config FS - uvc and uac1 functions 
 USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 ```
+### ConfigFS Framework (See Docs)
+- Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
+
+#### Structure:
+TOP: Upper Layers (network, fs, block I/O)
+MID: Gadget Drivers (use gadget API, functions, end points (EPx)
+LOW: Peripheral Drivers (HW, mic, camera)
+
 # Audio Setup
 - Gadget Controller - Raspberry Pi Zero 2 W
 - Camera - RPi camera module v.2 (for now)
@@ -179,6 +187,24 @@ No longer referencing these:
 [Gstreamer Bullseye Setup (ignore - for pi4](https://qengineering.eu/install-gstreamer-1.18-on-raspberry-pi-4.html)
 [Build Stuff (ignore)](https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/#:~:text=The%20Raspberry%20Pi%20kernel%20tree%20contains%20a%20number,stored%20in.dts%20file%20gets%20compiled%20into%20a.dtbo%20files.)
 
+### Host Side USB
+  - [IRQ - interrupt requests](https://www.techtarget.com/whatis/definition/IRQ-interrupt-request)
+
+### Client/Device Side USB
+ - [ConfigFS Gadget](https://irq5.io/2016/12/22/raspberry-pi-zero-as-multiple-usb-gadgets/)
+ - [Linux Kernel Building](https://www.raspberrypi.com/documentation/computers/linux_kernel.html#building-the-kernel)
+ - [Linux-Header Install](https://www.raspberrypi.com/documentation/computers/linux_kernel.html#kernel-headers)
+ - [Multi-gadget ConfigFS Example](https://gist.github.com/geekman/5bdb5abdc9ec6ac91d5646de0c0c60c4)
+   `"On a mac, use ecm, rather than rndis."`
+ - [ConfigFS Attribute Definitions](https://docs.kernel.org/usb/gadget_configfs.html)
+  
+### Alternate Cam
+Arducam Camera Module 3 (Third Party)
+- Model - UC-A74 Rev. B
+- SKU   - B0311
+- Specs - 110deg, wide-angle, auto focus
+- [Vendor Site](https://docs.arducam.com/Raspberry-Pi-Camera/Native-camera/12MP-IMX708/)
+
 ### (OLD) TO DO:
 - Use ConfigFS framework to reconfigure our current pipeline from the tutorial [the plug-and-play tutorial gives a solid stream but we need to reconfigure](https://gitlab.freedesktop.org/camera/uvc-gadget/)
 - Important: [Camera Tuning Guide](https://datasheets.raspberrypi.com/camera/raspberry-pi-camera-guide.pdf?_gl=1*ahfnux*_ga*Nzc4ODQ2NDAwLjE3MDk5NTExMTU.*_ga_22FD70LWDS*MTcxMDg4MzY0Ny40Ny4xLjE3MTA4ODU5MDMuMC4wLjA.)
@@ -187,14 +213,6 @@ No longer referencing these:
   
 - [Audio] Avoid any processing --> sink straight to usb endpoint
 -   Include audio function in uvc-gadget app
-
-### ConfigFS Framework (See Docs)
-- Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
-
-#### Structure:
-TOP: Upper Layers (network, fs, block I/O)
-MID: Gadget Drivers (use gadget API, functions, end points (EPx)
-LOW: Peripheral Drivers (HW, mic, camera)
 
 
 
