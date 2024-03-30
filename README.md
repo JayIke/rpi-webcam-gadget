@@ -37,6 +37,16 @@ Structure:
 - MID: Gadget Drivers (use gadget API, functions, end points (EPx)
 - LOW: Peripheral Drivers (HW, mic, camera)
 
+# AI Stuff
+
+OpenCV Install Warnings: [OpenCV Installation](https://qengineering.eu/install-opencv-4.4-on-raspberry-pi-4.html)
+>> Some words of warning. Do not use pip to install OpenCV on your Raspberry Pi. First of all, pip installations don't support C++ due to missing header files. If you want to write code in C++, as we like to do, never use pip. Secondly, at the time of writing (April 2020), the OpenCV 4.1.1 version will be installed by pip. This version depends on an atomic library. Although available, the Raspbian operation system will only use this library when forced to do so. This can be done by the LD_PRELOAD trick. Not a convenient way to have this explicit dependency. And as of last, with NOOBS 3.1.1, you will be dragged into missing dependencies like libQTtest etc.
+>>
+>> The same story applies to sudo apt-get install python3-opencv. The installed version of OpenCV (3.2.0 at the moment) neither supports C++. Another possible pitfall may be the repository. As soon as this ecosystem is updated with a newer version, a simple command like sudo apt-get upgrade will automatically install version 4.0.0 or higher which is incompatible with the 3 series. Unless you have isolated your OpenCV in a virtual environment, you are facing some time-consuming repair work on your old projects. On top of this all, and even worse, the installed version is not optimized for the NEON-ARM cores of the Raspberry Pi. So you end up with a library that could be much faster if it was installed manually according to the procedure below.
+>>
+
+
+
 # Audio Setup
 - Gadget Controller - Raspberry Pi Zero 2 W
 - Camera - RPi camera module v.2 (for now)
