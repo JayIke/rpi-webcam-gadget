@@ -52,7 +52,7 @@ Source/reference:
   - LRCL  Connector Pin 35 GPIO 19
   - DOUT  Connector Pin 38 GPIO 20
   - BCLK  Connector Pin 12 GPIO 18
-  - SEL   Connector Pin 3.3V
+  - SEL   Connector Pin GND
 
   RIGHT MIC
   - 3.3V  Connector Pin 1
@@ -60,7 +60,7 @@ Source/reference:
   - LRCL  Connector Pin 35 GPIO 19
   - DOUT  Connector Pin 38 GPIO 20
   - BCLK  Connector Pin 12 GPIO 18
-  - SEL   Connector Pin GND
+  - SEL   Connector Pin 3.3V
  
 ## Audio Software
 
