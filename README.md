@@ -32,10 +32,10 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 ### ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
 
-#### Structure:
-TOP: Upper Layers (network, fs, block I/O)
-MID: Gadget Drivers (use gadget API, functions, end points (EPx)
-LOW: Peripheral Drivers (HW, mic, camera)
+Structure:
+- TOP: Upper Layers (network, fs, block I/O)
+- MID: Gadget Drivers (use gadget API, functions, end points (EPx)
+- LOW: Peripheral Drivers (HW, mic, camera)
 
 # Audio Setup
 - Gadget Controller - Raspberry Pi Zero 2 W
@@ -43,6 +43,9 @@ LOW: Peripheral Drivers (HW, mic, camera)
 - Microphones - ADAFRUIT SPH0645 (Stereo Configuration)
 
 ## Audio Hardware
+Source/reference: 
+[Microphone Installation/Tutorial](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test)
+
   LEFT MIC
   - 3.3V  Connector Pin 1
   - GND   GND
@@ -60,9 +63,13 @@ LOW: Peripheral Drivers (HW, mic, camera)
   - SEL   Connector Pin GND
  
 ## Audio Software
+
 Stereo Configuration works using Paul's driver.
+
 Modified the dma_engine request to bcm2709 - not sure if this was necessary.
+
 [Paul Creaser's i2s mic driver](https://github.com/PaulCreaser/rpi-i2s-audio)
+
 ```bash
 # Working in mono config:
 sudo nano /boot/config.txt # uncomment dtparam=i2s=on (i enabled the i2c_arm and spi params as well)
@@ -89,8 +96,7 @@ arecord -D plughw:1 -c 2 -r 48000 -f S32_LE -V stereo -v -t wav test.wav
 # i believe this would call my_loader on boot:
 echo "my_loader" | sudo tee -a /etc/modules
 ```
-Hardware installation reference below:
-[Microphone Installation/Tutorial](https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test)
+
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/4ce2cc78-517c-4827-904a-ae4a77075d87)
 
 ### Combine/sync to Video
@@ -106,10 +112,10 @@ Maybe the way
 V4L2 Video/Media node descriptions
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/6425d938-8c80-4f28-bade-58a7b78f6aa2)
 
-# Archive Graveyard
+### Archive Graveyard
 Archives, honorable mentions, failed attempts - this is where I am hording currently unused or out of scope references/tutorials I stumbled upon.
 
-## Software Dependency archive
+### Software Dependency archive
 Putting old software install and build instructions here so as to not be confused with current build.
 
 ### Installation History (not current - reflashed w/ fresh Bullseye image)
@@ -183,14 +189,17 @@ sudo meson install -C build
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/d58ee568-9849-4d96-89cb-db1fbe7f25d8)
 
 ## Resource Archive
+
 No longer referencing these:
 [Gstreamer Bullseye Setup (ignore - for pi4](https://qengineering.eu/install-gstreamer-1.18-on-raspberry-pi-4.html)
 [Build Stuff (ignore)](https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/#:~:text=The%20Raspberry%20Pi%20kernel%20tree%20contains%20a%20number,stored%20in.dts%20file%20gets%20compiled%20into%20a.dtbo%20files.)
 
-### Host Side USB
+Host Side USB
+
   - [IRQ - interrupt requests](https://www.techtarget.com/whatis/definition/IRQ-interrupt-request)
 
-### Client/Device Side USB
+Client/Device Side USB
+
  - [ConfigFS Gadget](https://irq5.io/2016/12/22/raspberry-pi-zero-as-multiple-usb-gadgets/)
  - [Linux Kernel Building](https://www.raspberrypi.com/documentation/computers/linux_kernel.html#building-the-kernel)
  - [Linux-Header Install](https://www.raspberrypi.com/documentation/computers/linux_kernel.html#kernel-headers)
@@ -198,14 +207,15 @@ No longer referencing these:
    `"On a mac, use ecm, rather than rndis."`
  - [ConfigFS Attribute Definitions](https://docs.kernel.org/usb/gadget_configfs.html)
   
-### Alternate Cam
+Alternate Cam
+
 Arducam Camera Module 3 (Third Party)
 - Model - UC-A74 Rev. B
 - SKU   - B0311
 - Specs - 110deg, wide-angle, auto focus
 - [Vendor Site](https://docs.arducam.com/Raspberry-Pi-Camera/Native-camera/12MP-IMX708/)
 
-### (OLD) TO DO:
+(OLD) TO DO:
 - Use ConfigFS framework to reconfigure our current pipeline from the tutorial [the plug-and-play tutorial gives a solid stream but we need to reconfigure](https://gitlab.freedesktop.org/camera/uvc-gadget/)
 - Important: [Camera Tuning Guide](https://datasheets.raspberrypi.com/camera/raspberry-pi-camera-guide.pdf?_gl=1*ahfnux*_ga*Nzc4ODQ2NDAwLjE3MDk5NTExMTU.*_ga_22FD70LWDS*MTcxMDg4MzY0Ny40Ny4xLjE3MTA4ODU5MDMuMC4wLjA.)
 - [Video] Figure out which node will take care of post-processing (add features)
