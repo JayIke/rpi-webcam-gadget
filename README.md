@@ -6,6 +6,8 @@ Materials:
 3. Stereo Microphone - SPH0645 (Qty. 2)
 4. Cables - Micro-USB Power and Micro-USB 2.0 Data
 
+***A legit opencv tutorial specific to pi zero 2w:*** [opencv install on rpi - Sam Westby Tech](https://www.youtube.com/watch?v=QzVYnG-WaM4)
+
 ## Sequence Diagram
 More like a block diagram
 ```mermaid
