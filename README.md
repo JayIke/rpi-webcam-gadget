@@ -10,7 +10,7 @@ Materials:
 
 Description: Library of programming functions for real time computer vision operations - how we manipulate the video stream.
 
-***Install tutorial rpi z2w:*** [opencv install on rpi - Sam Westby Tech](https://www.youtube.com/watch?v=QzVYnG-WaM4)
+***Opencv Install for Python:*** [opencv install on rpi - Sam Westby Tech](https://www.youtube.com/watch?v=QzVYnG-WaM4)
 
 
 ## Sequence Diagram
