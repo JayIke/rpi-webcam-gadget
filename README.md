@@ -1,12 +1,19 @@
 # Overview
-Senior Design - Embedded AI USB Webcam
+Senior Design - RPI as an embedded AI plug-and-play USB2.0 webcam, 
 Materials:
 1. Raspberry Pi Zero 2W (32-Bit Bullseye LITE)
 2. Camera - RPI Camera Module V.3
 3. Stereo Microphone - SPH0645 (Qty. 2)
 4. Cables - Micro-USB Power and Micro-USB 2.0 Data
 
-## Sequence Diagram
+## Video Processing and Software Sequence
+The Big Picture:
+The `Libcamera` software stack is primarily responsible for enabling access to camera data. It bypasses the GPU of which users do not have access to and provides the API interface for applications. Our AI functions are built on top of this framework. The computer vision library, `opencv`, will be responsible for autonomously manipulating the live video stream. Autonomous behavior is defined by the combination of logic, prebuilt ML models, and event loops. However, `opencv` cannot directly acquire frames independently, so it imports a friend to do the heavy lifting - `pycamera2`. 
+
+Video=Pictures:
+Video is produced by transmitting individual frames at a certain frequency (i.e., 30 fps). So a set of pictures being displayed sequentially and at a rate that makes it appear seamless, we call a video. Resolution is the pixel density i think and a pixel contains a color value corresponding to the selected color group (i.e., RGB, BGR, Grayscale, HSV, etc). Data acquired from the camera module is stored in frame buffers which are responsible for temporarily storing data while its being moved. Once data has traveled safely to its destination, we need to destroy it so the memory it occupied is now free - literally using either a `release()` or `destroy()` function call.
+
+## Top-Level Diagram
 More like a block diagram
 ```mermaid
 sequenceDiagram
