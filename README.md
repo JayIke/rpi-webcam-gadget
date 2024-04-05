@@ -40,7 +40,8 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 ## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
 
-Structure :
+UVC Gadget ConfigFS Initialization:
+
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/09f0fe65-3cae-4013-956a-f4d2eb6aac23)
 
 ### UVC Gadget
