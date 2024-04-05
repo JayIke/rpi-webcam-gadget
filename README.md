@@ -36,7 +36,8 @@ Gadget Drivers-->USB Device Controller (UDC): Video/Audio Pipeline
 Note over Device Drivers,USB Device Controller (UDC): Config FS - uvc and uac1 functions 
 USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 ```
-### ConfigFS Framework (See Docs)
+
+## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
 
 Structure:
@@ -44,7 +45,7 @@ Structure:
 - MID: Gadget Drivers (use gadget API, functions, end points (EPx)
 - LOW: Peripheral Drivers (HW, mic, camera)
 
-## UVC Gadget
+### UVC Gadget
 Overview from (https://docs.kernel.org/usb/gadget_uvc.html)
 >*The UVC Gadget driver is a driver for hardware on the device side of a USB connection. It is intended to run on a Linux system that has USB device-side hardware such as boards with an OTG port.*
 >
@@ -65,8 +66,6 @@ Check your OS version (32 or 64 bit):
 Description: Library of programming functions for real time computer vision operations - how we manipulate the video stream.
 
 ***Opencv Install for Python:*** [opencv install on rpi - Sam Westby Tech](https://www.youtube.com/watch?v=QzVYnG-WaM4)
-
-
 
 # Audio Setup
 - Gadget Controller - Raspberry Pi Zero 2 W
