@@ -40,13 +40,12 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 ## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
 
-Structure:
-- TOP: Upper Layers (network, fs, block I/O)
-- MID: Gadget Drivers (use gadget API, functions, end points (EPx)
-- LOW: Peripheral Drivers (HW, mic, camera)
+Structure :
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/09f0fe65-3cae-4013-956a-f4d2eb6aac23)
 
 ### UVC Gadget
 Overview from (https://docs.kernel.org/usb/gadget_uvc.html)
+
 >*The UVC Gadget driver is a driver for hardware on the device side of a USB connection. It is intended to run on a Linux system that has USB device-side hardware such as boards with an OTG port.*
 >
 >*On the device system, once the driver is bound it appears as a V4L2 device with the output capability.*
