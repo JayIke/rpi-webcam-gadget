@@ -44,6 +44,16 @@ Structure:
 - MID: Gadget Drivers (use gadget API, functions, end points (EPx)
 - LOW: Peripheral Drivers (HW, mic, camera)
 
+## UVC Gadget
+Overview from (https://docs.kernel.org/usb/gadget_uvc.html)
+>*The UVC Gadget driver is a driver for hardware on the device side of a USB connection. It is intended to run on a Linux system that has USB device-side hardware such as boards with an OTG port.*
+>
+>*On the device system, once the driver is bound it appears as a V4L2 device with the output capability.*
+> 
+>*On the host side (once connected via USB cable), a device running the UVC Gadget driver and controlled by an appropriate userspace program should appear as a UVC specification compliant camera, and function appropriately with any program designed to handle them.*
+>
+>*The userspace program running on the device system can queue image buffers from a variety of sources to be transmitted via the USB connection. Typically this would mean forwarding the buffers from a camera sensor peripheral, but the source of the buffer is entirely dependent on the userspace companion program.*
+
 # AI Stuff
 
 Check your OS version (32 or 64 bit): 
