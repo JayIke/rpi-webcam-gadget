@@ -74,6 +74,10 @@ Description: Library of programming functions for real time computer vision oper
 ***Opencv Install for Python:*** [opencv install on rpi - Sam Westby Tech](https://www.youtube.com/watch?v=QzVYnG-WaM4)
 
 # Audio Setup
+This is the hardware driver for the microphone. UAC functions are defined in upon configFS initialization and of which the output of the capture card should be defaulted to. Throughput has been verified using `alsaloop` - configured with the hardware capture card as the capture device and UAC2 card as playback at 48000 (upmix to 96000?).
+
+  To do: Integrate into pipeline using the built in libav codec - look to see syncing options available within the libcamera or v4l2 api and implement the function in uvc-gadget or other application.
+  
 - Gadget Controller - Raspberry Pi Zero 2 W
 - Camera - RPi camera module v.2 (for now)
 - Microphones - ADAFRUIT SPH0645 (Stereo Configuration)
@@ -102,7 +106,7 @@ Source/reference:
 
 Stereo Configuration works using Paul's driver.
 
-Modified the dma_engine request to bcm2709 - not sure if this was necessary.
+Modified the dma_engine request to bcm2710 - not sure if this was necessary.
 
 [Paul Creaser's i2s mic driver](https://github.com/PaulCreaser/rpi-i2s-audio)
 
@@ -112,8 +116,9 @@ sudo nano /boot/config.txt # uncomment dtparam=i2s=on (i enabled the i2c_arm and
 git clone https://github.com/PaulCreaser/rpi-i2s-audio
 cd rpi-i2s-audio/
 
-# Change dma_engine=bcm2708-dmaengine to dma_engine=bcm2709-dmaengine
+
 sudo nano my_loader.c
+# Change dma_engine=bcm2708-dmaengine to dma_engine=bcm2710-dmaengine (Pi-zero Z2W)
 
 # install latest kernel headers if necessary
 sudo apt-get install raspberrypi-kernel-headers
