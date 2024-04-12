@@ -163,12 +163,17 @@ if
 	echo "Binding USB Device Controller"
 	echo $UDC > UDC
 	echo "OK"
+
+	echo "Creating Virtual Video Devices"
+	modprobe v4l2loopback devices=2 exclusive_caps=1,1 video_nr=5,6 card_label="Gst VideoTest","OpenCV Camera"
+	echo "Devices 5 and 6 created. Never give up"
 fi
 #modprobe g_audio 
 #sleep 3
-
+v4l2-ctl --list-devices
+v4l2-ctl -d /dev/video5 --all
 # Run uvc-gadget. The -c flag sets libcamera as a source, arg 0 selects
 # the first available camera on the system. All cameras will be listed,
 # you can re-run with -c n to select camera n or -c ID to select via
 # the camera ID.
-uvc-gadget -c 0 uvc.0
+#uvc-gadget -c 0 uvc.0
