@@ -8,7 +8,7 @@ Materials:
 
 ## Video Processing and Software Stack
 The Big Picture:
-The `Libcamera` software stack is primarily responsible for enabling access to camera data. It bypasses the GPU of which users do not have access to and provides the API interface for applications. Our AI functions are built on top of this framework. The computer vision library, `opencv`, will be responsible for autonomously manipulating the live video stream. Autonomous behavior is defined by the combination of logic, prebuilt ML models, and event loops. However, `opencv` cannot acquire frames independently, so it imports a friend to do the snag and grab - `pycamera2`. `v4l2` (Linux video/camera kernel interface) is the low-level interface between user-space and the kernel. The goal is to define a camera system comprised of the following software grouped by function:
+The `Libcamera` software stack is primarily responsible for enabling access to camera data. It bypasses the GPU of which users do not have access to and provides the API interface for applications. Our AI functions are built on top of this framework. The computer vision library, `opencv`, will be responsible for autonomously manipulating the live video stream. Autonomous behavior is defined by the combination of logic, prebuilt ML models, and event loops. However, `opencv` (for some reason) relies on `pycamera2` to grab frames. `v4l2` (Linux video/camera kernel interface) is the low-level interface between user-space and the kernel. The goal is to define a camera system comprised of the following software grouped by function:
 1) Computer vision and processing --> `opencv` and `picamera2` will work together to acquire and manipulate frames.
   To do: Direct output to an images/slideshow directory, buffer, or other output type accessible by uvc-gadget program.
 2) Host-side Control and GPIO signaling - Build on top of working `ConfigFS` framework in the `processing` or `extension unit (xu)` directory to query and respond to IOCTL requests and GPIO signals. For example, toggle blur effect or camera stream on and off. File descriptors in this directory rely on the uvc-chain configuration (source/output ids). May need to tear down or build up  after disable or enable signal is received - in runtime.
@@ -18,6 +18,22 @@ The `Libcamera` software stack is primarily responsible for enabling access to c
 
 Video=Pictures:
 Video is produced by transmitting individual frames at a certain frequency (i.e., 30 fps). So a set of pictures being displayed sequentially and at a rate that makes it appear seamless, we call a video. Resolution is the pixel density i think and a pixel contains a color value corresponding to the selected color group (i.e., RGB, BGR, Grayscale, HSV, etc). Data acquired from the camera module is stored in frame buffers which are responsible for temporarily storing data while its being moved. Once data has traveled safely to its destination, we need to destroy it so the memory it occupied is now free - literally using either a `release()` or `destroy()` function call.
+
+## V4L2 Devices
+I'm just assuming this to be a compatibility layer between higher level libcamera API and lower level uvc-driver implementations. It's clear V4L2 video devices get created as a result of both camera detection (libcamera media controller) and ConfigFS function to UDC binding (`rpi-webcam-gadget.sh` creates `/dev/video2`).
+
+Probably important:
+
+[V4L2 Events](https://www.kernel.org/doc/html/v4.9/media/kapi/v4l2-event.html)
+
+[V4l2 IOCTL OPS](https://www.kernel.org/doc/html/v4.9/media/kapi/v4l2-videobuf.html#ioctl-operations)
+
+### 3 buffer types
+1) For scatter/gather DMA ops: Buffers which are scattered in both the physical and (kernel) virtual address spaces. (Almost) all user-space buffers are like this, but it makes great sense to allocate kernel-space buffers this way as well when it is possible. Unfortunately, it is not always possible; working with this kind of buffer normally requires hardware which can do scatter/gather DMA operations.
+3) Allocated with `vmalloc()`: Buffers which are physically scattered, but which are virtually contiguous; buffers allocated with vmalloc(), in other words. These buffers are just as hard to use for DMA operations, but they can be useful in situations where DMA is not available but virtually-contiguous buffers are convenient.
+4) Buffers which are physically contiguous. Allocation of this kind of buffer can be unreliable on fragmented systems, but simpler DMA controllers cannot deal with anything else.
+
+I think we use (2), at least in uvc-gadget driver.
 
 ## Top-Level Diagram
 More like a block diagram
