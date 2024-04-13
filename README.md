@@ -38,6 +38,134 @@ I think we use (2), at least in uvc-gadget driver.
 ## Control Scheme
 Eventually we want to start/stop/toggle between stream delivery methods effectively and without locking up memory or controls. The first step is to install buttons to gpio and listen using the pigpiozero lib (.py) to trigger basic terminal commands. The next step will be to pass/emit events to the correct places - if it's not too involved. We may have to just pass hard start and kill cmds to terminal to emulate (fake) some sophisticated level of control.
 
+### `libcamera-source.cpp` in `uvc-gadget/lib` 
+Snippet to save myself the time of relocating important calls and negotation methods on uvc-gadget side. When trying to pass a vanilla libcamerasrc directly to /dev/video2 via gstreamer and without running `uvc-gadget` I get an error like, "not negotiated error -4", pretty sure the `outputReadyCallback()` and `validate()` make this work. 
+```C
+static void libcamera_source_destroy(struct video_source *s)
+{
+	struct libcamera_source *src = to_libcamera_source(s);
+
+	src->camera->requestCompleted.disconnect(src);
+
+	/* Closing the event notification file descriptors */
+	close(src->pfds[0]);
+	close(src->pfds[1]);
+
+	src->camera->release();
+	src->camera.reset();
+	src->cm->stop();
+	delete src;
+}
+
+static int libcamera_source_set_format(struct video_source *s,
+				       struct v4l2_pix_format *fmt)
+{
+	struct libcamera_source *src = to_libcamera_source(s);
+	StreamConfiguration &streamConfig = src->config->at(0);
+	__u32 chosen_pixelformat = fmt->pixelformat;
+
+	streamConfig.size.width = fmt->width;
+	streamConfig.size.height = fmt->height;
+	streamConfig.pixelFormat = PixelFormat(chosen_pixelformat);
+
+	src->config->validate();
+
+#ifdef CONFIG_CAN_ENCODE
+	/*
+	 * If the user requests MJPEG but the camera can't supply it, try again
+	 * with YUV420 and initialise an MjpegEncoder to compress the data.
+	 */
+	if (chosen_pixelformat == V4L2_PIX_FMT_MJPEG &&
+	    streamConfig.pixelFormat.fourcc() != chosen_pixelformat) {
+		std::cout << "MJPEG format not natively supported; encoding YUV420" << std::endl;
+
+		src->encoder = new MjpegEncoder();
+		src->encoder->SetOutputReadyCallback(std::bind(&libcamera_source::outputReady, src, _1, _2, _3, _4));
+
+		streamConfig.pixelFormat = PixelFormat(V4L2_PIX_FMT_YUV420);
+		src->src.type = VIDEO_SOURCE_ENCODED;
+
+		src->config->validate();
+	}
+#endif
+
+	if (fmt->pixelformat != streamConfig.pixelFormat.fourcc())
+		std::cerr << "Warning: set_format: Requested format unavailable" << std::endl;
+
+	std::cout << "setting format to " << streamConfig.toString() << std::endl;
+
+	/*
+	 * No .configure() call at this stage, because we need to pick up the
+	 * number of buffers to use later on so we'd need to call it then too.
+	 */
+
+	fmt->width = streamConfig.size.width;
+	fmt->height = streamConfig.size.height;
+	fmt->pixelformat = src->encoder ? V4L2_PIX_FMT_MJPEG : streamConfig.pixelFormat.fourcc();
+	fmt->field = V4L2_FIELD_ANY;
+
+	/* TODO: Can we use libcamera helpers to get image size / stride? */
+	fmt->sizeimage = fmt->width * fmt->height * 2;
+
+	return 0;
+}
+
+```
+
+### `v4l2-source.c` in `uvc-gadget/lib` /dev/video2 has been verified to effectively output stream via USB, but only when paired with libcamerasrc via cmd `uvc-gadget -c 0 uvc.0`:
+
+```C
+static int v4l2_source_stream_on(struct video_source *s)
+{
+	struct v4l2_source *src = to_v4l2_source(s);
+	unsigned int i;
+	int ret;
+
+	/* Queue all buffers. */
+	for (i = 0; i < src->vdev->buffers.nbufs; ++i) {
+		struct video_buffer buf = {
+			.index = i,
+			.size = src->vdev->buffers.buffers[i].size,
+			.dmabuf = src->vdev->buffers.buffers[i].dmabuf,
+		};
+
+		ret = v4l2_queue_buffer(src->vdev, &buf);
+		if (ret < 0)
+			return ret;
+	}
+
+	ret = v4l2_stream_on(src->vdev);
+	if (ret < 0)
+		return ret;
+
+	events_watch_fd(src->src.events, src->vdev->fd, EVENT_READ,
+			v4l2_source_video_process, src);
+
+	return 0;
+}
+
+static int v4l2_source_stream_off(struct video_source *s)
+{
+	struct v4l2_source *src = to_v4l2_source(s);
+
+	events_unwatch_fd(src->src.events, src->vdev->fd, EVENT_READ);
+
+	return v4l2_stream_off(src->vdev);
+}
+
+static const struct video_source_ops v4l2_source_ops = {
+	.destroy = v4l2_source_destroy,
+	.set_format = v4l2_source_set_format,
+	.set_frame_rate = v4l2_source_set_frame_rate,
+	.alloc_buffers = v4l2_source_alloc_buffers,
+	.export_buffers = v4l2_source_export_buffers,
+	.free_buffers = v4l2_source_free_buffers,
+	.stream_on = v4l2_source_stream_on,
+	.stream_off = v4l2_source_stream_off,
+	.queue_buffer = v4l2_source_queue_buffer,
+};
+```
+
 ## Top-Level Diagram
 More like a block diagram
 ```mermaid
