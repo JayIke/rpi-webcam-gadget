@@ -38,6 +38,8 @@ I think we use (2), at least in uvc-gadget driver.
 ## Control Scheme
 Eventually we want to start/stop/toggle between stream delivery methods effectively and without locking up memory or controls. The first step is to install buttons to gpio and listen using the pigpiozero lib (.py) to trigger basic terminal commands. The next step will be to pass/emit events to the correct places - if it's not too involved. We may have to just pass hard start and kill cmds to terminal to emulate (fake) some sophisticated level of control.
 
+[Danny's UVC breakdown](https://github.com/odin5on/pi-webcam/blob/main/uvc-explained.md)
+
 ### `libcamera-source.cpp` in `uvc-gadget/lib` 
 Snippet to save myself the time of relocating important calls and negotation methods on uvc-gadget side. When trying to pass a vanilla libcamerasrc directly to /dev/video2 via gstreamer and without running `uvc-gadget` I get an error like, "not negotiated error -4", pretty sure the `outputReadyCallback()` and `validate()` make this work. 
 ```C
