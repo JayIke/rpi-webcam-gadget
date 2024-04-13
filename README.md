@@ -35,6 +35,9 @@ Probably important:
 
 I think we use (2), at least in uvc-gadget driver.
 
+## Control Scheme
+Eventually we want to start/stop/toggle between stream delivery methods effectively and without locking up memory or controls. The first step is to install buttons to gpio and listen using the pigpiozero lib (.py) to trigger basic terminal commands. The next step will be to pass/emit events to the correct places - if it's not too involved. We may have to just pass hard start and kill cmds to terminal to emulate (fake) some sophisticated level of control.
+
 ## Top-Level Diagram
 More like a block diagram
 ```mermaid
