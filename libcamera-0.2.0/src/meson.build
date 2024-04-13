@@ -37,5 +37,4 @@ subdir('apps')
 
 subdir('gstreamer')
 subdir('py')
-sbudir('uvc-gadget')
 subdir('v4l2')
