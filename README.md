@@ -257,6 +257,9 @@ This is the hardware driver for the microphone. UAC functions are defined in upo
 
   To do: Integrate into pipeline using the built in libav codec - look to see syncing options available within the libcamera or v4l2 api and implement the function in uvc-gadget or other application.
 
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/e46eb078-ed21-4a2e-8739-6e2890e6d64c)
+
+
 ## Audio Hardware
 
 - Gadget Controller - Raspberry Pi Zero 2 W
