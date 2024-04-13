@@ -35,8 +35,34 @@ Probably important:
 
 I think we use (2), at least in uvc-gadget driver.
 
-## Control Scheme
+## Event Loop
+`uvc-gadget` driver essentially gets the ball rolling - initializes camera src, subscribing/registering to events, parsing ConfigFS (grabbing attributes), allocates buffers, and eventually passes it off to an event loop which listens for events and passes data when requested. After the initialization process, the event loop is somewhat of an autonomous entity. An important thing to note in regard to control is `signal(SIGINT, sigint_handler);` in `main.c`. This registers a signal handler for `SIGINT`, right now it's received upon `CTRL-C` - perhaps we can source this (or similar) signal from our gpio driver.
+
+### Control and Event notes
 Eventually we want to start/stop/toggle between stream delivery methods effectively and without locking up memory or controls. The first step is to install buttons to gpio and listen using the pigpiozero lib (.py) to trigger basic terminal commands. The next step will be to pass/emit events to the correct places - if it's not too involved. We may have to just pass hard start and kill cmds to terminal to emulate (fake) some sophisticated level of control.
+
+we'll have to handle events differently depending on whether we initialize a v4l2 or libcamera source
+```C
+	/*
+	 * Create the events handler. Register a signal handler for SIGINT,
+	 * received when the user presses CTRL-C. This will allow the main loop
+	 * to be interrupted, and resources to be freed cleanly.
+	 */
+	events_init(&events);
+
+	sigint_events = &events;
+	signal(SIGINT, sigint_handler);
+
+if (cap_device)
+	v4l2_video_source_init(src, &events);
+
+#ifdef HAVE_LIBCAMERA
+	if (camera)
+		libcamera_source_init(src, &events);
+#endif
+```
+
+[Danny's UVC breakdown](https://github.com/odin5on/pi-webcam/blob/main/uvc-explained.md)
 
 ### `libcamera-source.cpp` in `uvc-gadget/lib` 
 Snippet to save myself the time of relocating important calls and negotation methods on uvc-gadget side. When trying to pass a vanilla libcamerasrc directly to /dev/video2 via gstreamer and without running `uvc-gadget` I get an error like, "not negotiated error -4", pretty sure the `outputReadyCallback()` and `validate()` make this work. 
