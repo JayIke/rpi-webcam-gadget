@@ -1,1 +1,0 @@
-cmd_/home/jordin/rpi-webcam-gadget/audio/Module.symvers :=  sed 's/ko$$/o/'  /home/jordin/rpi-webcam-gadget/audio/modules.order | scripts/mod/modpost -m -a    -o /home/jordin/rpi-webcam-gadget/audio/Module.symvers -e -i Module.symvers -T - 

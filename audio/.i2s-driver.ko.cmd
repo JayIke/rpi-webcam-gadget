@@ -1,1 +1,0 @@
-cmd_/home/jordin/rpi-webcam-gadget/audio/i2s-driver.ko := ld -r -EL -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/jordin/rpi-webcam-gadget/audio/i2s-driver.ko /home/jordin/rpi-webcam-gadget/audio/i2s-driver.o /home/jordin/rpi-webcam-gadget/audio/i2s-driver.mod.o;  true
