@@ -1,4 +1,8 @@
 #!/bin/bash
+##########################
+# webcam-gadget.sh
+# functions: uvc and uac2
+##########################
 
 # Referencing: https://developer.ridgerun.com/wiki/index.php/How_to_use_the_UVC_gadget_driver_in_Linux#Configuring_UVC_function
 # Official kernel docs: https://www.kernel.org/doc/html/v5.5/usb/gadget-testing.html#uac2-function
@@ -6,27 +10,46 @@
 # This loads the module responsible for allowing USB Gadgets to be
 # configured through configfs, without which we can't connect to the
 # UVC gadget kernel driver
-echo "Loading composite module"
-modprobe libcomposite
 
+######################
+# Directories
+######################
 UDC=`ls /sys/class/udc`
 #UDC_ROLE=/sys/devices/platform/soc/78d9000.usb/ci_hdrc.0/role
 CONFIGFS="/sys/kernel/config"
 GADGET="$CONFIGFS/usb_gadget"
+
+#######################
+# Basic Strings
+#######################
 VID="0x0525"
-PID="0x0102"		# Or try "0xa4a2"
+PID="0x0104"		# 0x0104 multi-function / 0x0101 for audio gadget / 0xa4a2 uvc-webcam?
 SERIAL="0123456789"
 MANUF=$(hostname)
-PRODUCT="UVC Gadget"
+PRODUCT="RTT Gadget"
+BCD_DEVICE=0x0100	# v.1.0.0
+BCD_USB=0x0200		# USB2.0
 
+##############################################
+# Load modules
+# libcomposite: allows us to define our device
+# i2s-driver: initialize audio capture card
+##############################################
+echo "Loading composite module"
+modprobe libcomposite
+echo "Loading i2s audio capture card"
+modprobe i2s-driver
+
+cd $CONFIGFS
 # Create the gadget
 mkdir -p $GADGET/g1			# UDC, bDeviceClass, bDeviceSubclass, bMaxPacketSize0, bcdDevice, bcdDevice,
 					# bcdUSB, configs, functions, idProduct, idVendor, os_desc, strings
-
 # Set vendor and product ID
 cd $GADGET/g1
 echo $VID > idVendor
 echo $PID > idProduct
+echo $BCD_DEVICE > bcdDevice
+echo $BCD_USB > bcdUSB
 
 # Create english string
 mkdir -p strings/0x409			# manufacturer, product, serialnumber
@@ -36,7 +59,19 @@ echo $SERIAL > strings/0x409/serialnumber
 echo $MANUF > strings/0x409/manufacturer
 echo $PRODUCT > strings/0x409/product
 
-# Later on, this function is used to tell the usb subsystem that we want
+
+#########################################
+# Define audio (UAC2) function/attributes
+#########################################
+AUDIO_CHANNEL_MASK_CAPTURE=3		# 1=Left 2=Right 3=Stereo 0=disables the device
+AUDIO_CHANNEL_MASK_PLAYBACK=3
+AUDIO_SAMPLE_RATES_CAPTURE=44100,48000
+AUDIO_SAMPLE_RATES_PLAYBACK=44100,48000
+AUDIO_SAMPLE_SIZE_CAPTURE=4		# 1 for S8LE / 2 for S16LE / 3 for S24LE / 4 for S32LE
+AUDIO_SAMPLE_SIZE_PLAYBACK=2
+
+
+# Later on, this function is used to tell the usb video subsystem that we want
 # to support a particular format, framesize and frameintervals
 create_frame() {
 	# Example usage:
@@ -132,32 +167,40 @@ create_uvc() {
 }
 
 # Create configuration
-echo "Creating configs --> configs/c.1"
+echo "Creating config: c.1"
 mkdir configs/c.1			# MaxPower, bmAttributes, strings
 
 # Create english string for configuration
 echo "Setting English strings"
-mkdir configs/c.1/strings/0x409		# configuration
+mkdir -p configs/c.1/strings/0x409
+CON_STR="UVC_UAC"
+echo $CON_STR > configs/c.1/strings/0x409/configuration
 
 # Create UVC functions --> UVC for video USB video class
 echo "Creating UVC functions..."
-create_uvc configs/c.1 uvc.0
-#CONFIG="configs/c.1"
-echo "uvc.0 functions OK"
+VIDEO="uvc.usb0"
+create_uvc configs/c.1 $VIDEO
+
+echo "uvc.usb0 functions OK"
 
 cd $GADGET/g1
 
 # Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
-echo "Creating UAC1 functions..."
-AUDIO="uac1.0"				
-mkdir functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
-echo "uac1.0 functions OK"
+echo "Creating UAC2 functions..."
+AUDIO="uac2.usb0"
+mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+echo "uac2.usb0 functions OK"
+
+echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.usb0/c_chmask
+echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.usb0/c_srate
+echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.usb0/c_ssize
+echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.usb0/p_chmask
+echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.usb0/p_srate
+echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
 
 # Assigning configuration to functions
-echo "Assigning configuration c.1 to audio functions uac1.0..."
-ln -s functions/$AUDIO configs/c.1
-
-# cd /config/usb_gadget/g1/functions/uvc.0
+echo "Linking c.1 to audio function uac2.usb0..."
+ln -s functions/$AUDIO configs/c.1/
 
 echo "Binding USB Device Controller..."
 echo $UDC > UDC
@@ -173,7 +216,4 @@ echo "Bounded to udc : $UDC"
 # 360p  bAspectRatioX  bAspectRatioY  bBitsPerPixel  bDefaultFrameIndex  bmInterfaceFlags  bmaControls  guidForma
 
 #ls functions/uvc.0/streaming/uncompressed/u/360p/
-# bmCapabilities dwDefaultFrameInterval	dwFrameInterval  dwMaxBitRate  dwMaxVideoFrameBufferSize  dwMinBitRate	wHeight  wWidth
-
-
-#udevadm settle -t 5 || :
+# bmCapabilities dwDefaultFrameInterval	dwFrameInterval  dwMaxBitRate  dwMaxVideoFrameBufferS
