@@ -105,7 +105,8 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 
 ## ConfigFS Framework (See Docs)
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
-
+- `webcam-gadget.sh` has been modified to include audio function - UAC2
+- 	UAC2 is used as opposed to UAC1 to support 4byte capture mask required by mics and driver... UAC1 could be used and the conversion would happen under the hood, but its not as efficient
 UVC Gadget ConfigFS Initialization:
 
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/09f0fe65-3cae-4013-956a-f4d2eb6aac23)
