@@ -104,6 +104,8 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 ```
 
 ## ConfigFS Framework (See Docs)
+[solid link](https://www.kernel.org/doc/html/v4.16/driver-api/usb/gadget.html)
+
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
 - `webcam-gadget.sh` has been modified to include audio function - UAC2
 - 	UAC2 is used as opposed to UAC1 to support 4byte capture mask required by mics and driver... UAC1 could be used and the conversion would happen under the hood, but its not as efficient
