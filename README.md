@@ -149,6 +149,11 @@ RTT Gadget recognized as a webcam audio device on Windows 11.
 
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/2acec158-0af7-4f6f-8761-cdae20343c6b)
 
+Windows 11 also recognizes it as a camera source.
+
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/d69ba988-756b-42a8-8c48-131dafe04e65)
+
+
 [DMAEngine reference for hw driver](https://www.kernel.org/doc/html/v4.16/driver-api/dmaengine/provider.html)
 
 To do: Fix this bus error either in uvc-gadget or i2s-driver
