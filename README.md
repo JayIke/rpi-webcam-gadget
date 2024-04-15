@@ -144,6 +144,11 @@ Overview from (https://docs.kernel.org/usb/gadget_uvc.html)
 >*The userspace program running on the device system can queue image buffers from a variety of sources to be transmitted via the USB connection. Typically this would mean forwarding the buffers from a camera sensor peripheral, but the source of the buffer is entirely dependent on the userspace companion program.*
 
 # Audio
+
+RTT Gadget recognized as a webcam audio device on Windows 11.
+
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/2acec158-0af7-4f6f-8761-cdae20343c6b)
+
 [DMAEngine reference for hw driver](https://www.kernel.org/doc/html/v4.16/driver-api/dmaengine/provider.html)
 
 To do: Fix this bus error either in uvc-gadget or i2s-driver
