@@ -153,6 +153,10 @@ Windows 11 also recognizes it as a camera source.
 
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/d69ba988-756b-42a8-8c48-131dafe04e65)
 
+Properties of a recorded video on host validates the video and audio specs set in ConfigFS - still cant hear anything but software vol has not yet been implemented
+
+![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/5ca899f3-d449-4ada-9584-68d616fbfa7b)
+
 
 [DMAEngine reference for hw driver](https://www.kernel.org/doc/html/v4.16/driver-api/dmaengine/provider.html)
 
