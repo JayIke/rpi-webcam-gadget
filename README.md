@@ -108,6 +108,13 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 - `webcam-gadget.sh` has been modified to include audio function - UAC2
 - 	UAC2 is used as opposed to UAC1 to support 32-bit playback... UAC1 has been verified to work, but an extra software conversion step is required.
 
+>> In USB protocol interactions, the device driver is the master (or “client driver”) and the gadget driver is the slave (or “function driver”).
+
+>> The gadget API resembles the host side Linux-USB API in that both use queues of request objects to package I/O buffers, and those requests may be submitted or canceled.
+>> They share common definitions for the standard USB Chapter 9 messages, structures, and constants. >>Also, both APIs bind and unbind drivers to devices.
+>> The APIs differ in detail, since the host side’s current URB framework exposes a number of implementation details and assumptions that are inappropriate for a gadget API.
+>> While the model for control transfers and configuration management is necessarily different (one side is a hardware-neutral master, the other is a hardware-aware slave), the endpoint I/0 API used here should also be usable for an overhead-reduced host side API.
+
 Gadget Driver, FunctionFS, and DMAEngine references for understanding the relation between endpoints, `epX`, interfaces, and data transfer from IIO to USB stack.
 
 [FunctionFS from Linux Docs](https://github.com/torvalds/linux/blob/master/Documentation/usb/functionfs.rst)
