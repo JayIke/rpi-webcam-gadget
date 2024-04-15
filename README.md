@@ -108,7 +108,7 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 
 - Purpose: Create gadget device, define attributes, and bind to a UDC driver. 
 - `webcam-gadget.sh` has been modified to include audio function - UAC2
-- 	UAC2 is used as opposed to UAC1 to support 4byte capture mask required by mics and driver... UAC1 could be used and the conversion would happen under the hood, but its not as efficient
+- 	UAC2 is used as opposed to UAC1 to support 32-bit playback... UAC1 has been verified to work, but an extra software conversion step is required.
 
 Capture and playback soundcard should be properly installed after running `webcam-gadget.sh`:
 
@@ -131,6 +131,8 @@ Overview from (https://docs.kernel.org/usb/gadget_uvc.html)
 >*The userspace program running on the device system can queue image buffers from a variety of sources to be transmitted via the USB connection. Typically this would mean forwarding the buffers from a camera sensor peripheral, but the source of the buffer is entirely dependent on the userspace companion program.*
 
 # Audio
+[DMAEngine reference for hw driver](https://www.kernel.org/doc/html/v4.16/driver-api/dmaengine/provider.html)
+
 To do: Integrate into pipeline using the built in libav codec - see syncing options available within the libcamera or v4l2 api and implement the function in uvc-gadget or other application.
 
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/e46eb078-ed21-4a2e-8739-6e2890e6d64c)
