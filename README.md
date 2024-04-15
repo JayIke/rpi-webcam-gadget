@@ -146,7 +146,10 @@ Overview from (https://docs.kernel.org/usb/gadget_uvc.html)
 # Audio
 [DMAEngine reference for hw driver](https://www.kernel.org/doc/html/v4.16/driver-api/dmaengine/provider.html)
 
-To do: Integrate into pipeline using the built in libav codec - see syncing options available within the libcamera or v4l2 api and implement the function in uvc-gadget or other application.
+To do: Fix this bus error either in uvc-gadget or i2s-driver
+
+![Screenshot 2024-04-15 031124](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/ef9470ca-7905-4948-9bf5-394a31f2a1fa)
+
 
 ![image](https://github.com/JayIke/rpi-webcam-gadget/assets/69820301/e46eb078-ed21-4a2e-8739-6e2890e6d64c)
 
