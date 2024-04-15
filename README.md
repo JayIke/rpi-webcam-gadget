@@ -108,11 +108,13 @@ USB Device Controller (UDC)->USB Host (PC): Webcam Stream
 - `webcam-gadget.sh` has been modified to include audio function - UAC2
 - 	UAC2 is used as opposed to UAC1 to support 32-bit playback... UAC1 has been verified to work, but an extra software conversion step is required.
 
-FunctionFS and DMAEngine references for understanding the relation between endpoints, `epX`, interfaces, and data transfer from IIO to USB stack.
+Gadget Driver, FunctionFS, and DMAEngine references for understanding the relation between endpoints, `epX`, interfaces, and data transfer from IIO to USB stack.
 
-[FunctionFS](https://github.com/torvalds/linux/blob/master/Documentation/usb/functionfs.rst)
+[FunctionFS from Linux Docs](https://github.com/torvalds/linux/blob/master/Documentation/usb/functionfs.rst)
 
-[DMAEngine](https://www.kernel.org/doc/html/v4.16/driver-api/usb/gadget.html)
+[Gadget Driver](https://www.kernel.org/doc/html/v4.16/driver-api/usb/gadget.html)
+
+[DMAEngine](https://www.kernel.org/doc/html/v4.16/driver-api/dmaengine/provider.html)
 
 Capture and playback soundcard should be properly installed after running `webcam-gadget.sh`:
 
