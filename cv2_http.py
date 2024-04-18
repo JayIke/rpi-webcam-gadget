@@ -10,7 +10,7 @@ from http import server
 from threading import Condition
 import cv2 
 from picamera2 import MappedArray, Picamera2, Preview
-from picamera2.encoders import H264Encoder
+from picamera2.encoders import MJPEGEncoder, H264Encoder
 from picamera2.outputs import FileOutput
 
 PAGE = """\
@@ -97,7 +97,7 @@ def draw_faces(request):
 
 
 picam2 = Picamera2()
-picam2.start_preview(Preview.QTGL)
+#picam2.start_preview(Preview.QTGL)
 config = picam2.create_preview_configuration(main={"size": (640, 480)},
                                              lores={"size": (320, 240), "format": "YUV420"})
 picam2.configure(config)
@@ -107,9 +107,11 @@ picam2.configure(config)
 s1 = picam2.stream_configuration("lores")["stride"]
 faces = []
 picam2.post_callback = draw_faces
+
+#encoder = H264Encoder(10000000)
+picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
 output = StreamingOutput()
-encoder = H264Encoder(10000000)
-picam2.start_recording(encoder, FileOutput(output))
+picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
 start_time = time.monotonic()
 # Run for 10 seconds.
