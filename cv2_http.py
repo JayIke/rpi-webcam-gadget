@@ -109,7 +109,7 @@ faces = []
 picam2.post_callback = draw_faces
 
 #encoder = H264Encoder(10000000)
-picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+#picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
 output = StreamingOutput()
 picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
@@ -120,9 +120,9 @@ try:
 finally:
     picam2.stop_recording()
 
-start_time = time.monotonic()
+#start_time = time.monotonic()
 # Run for 10 seconds.
-while time.monotonic() - start_time < 10:
+while True:
     buffer = picam2.capture_buffer("lores")
     grey = buffer[:s1 * h1].reshape((h1, s1))
     faces = face_detector.detectMultiScale(grey, 1.1, 3)
