@@ -10,7 +10,7 @@ from http import server
 from threading import Condition
 import cv2 
 from picamera2 import MappedArray, Picamera2, Preview
-from picamera2.encoders import MJPEGEncoder
+from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 
 PAGE = """\
