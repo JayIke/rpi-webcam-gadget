@@ -97,7 +97,7 @@ def draw_faces(request):
 
 
 picam2 = Picamera2()
-#picam2.start_preview(Preview.QTGL)
+picam2.start_preview()
 config = picam2.create_preview_configuration(main={"size": (640, 480)},
                                              lores={"size": (320, 240), "format": "YUV420"})
 picam2.configure(config)
@@ -113,16 +113,18 @@ picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
 output = StreamingOutput()
 picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
-start_time = time.monotonic()
-# Run for 10 seconds.
-while time.monotonic() - start_time < 120:
-    buffer = picam2.capture_buffer("lores")
-    grey = buffer[:s1 * h1].reshape((h1, s1))
-    faces = face_detector.detectMultiScale(grey, 1.1, 3)
-
 try:
     address = ('', 8000)
     server = StreamingServer(address, StreamingHandler)
     server.serve_forever()
 finally:
     picam2.stop_recording()
+
+start_time = time.monotonic()
+# Run for 10 seconds.
+while time.monotonic() - start_time < 10:
+    buffer = picam2.capture_buffer("lores")
+    grey = buffer[:s1 * h1].reshape((h1, s1))
+    faces = face_detector.detectMultiScale(grey, 1.1, 3)
+
+
