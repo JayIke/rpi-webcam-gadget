@@ -201,6 +201,14 @@ ALSA framework snapshot:
 
 # Resources
 
+Linux:
+
+[v4l2_streams branch - drivers](https://github.com/raspberrypi/linux/tree/v4l2_streams/drivers)
+
+[sound/soc/dwc](https://github.com/raspberrypi/linux/tree/v4l2_streams/sound/soc/dwc)
+
+
+
 Quick external module compile/install and symbol export/linking - useful for audio driver:
 
 [External modules - kbuild](https://www.kernel.org/doc/Documentation/kbuild/modules.txt)
