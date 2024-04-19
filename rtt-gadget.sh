@@ -5,11 +5,14 @@
 # File: ~/.rtt-gadget.sh
 # Description: Configure as UVC device with audio subclass (UAC2)
 #              using the IAD class (Interface Association Descriptor)
+# Options: start, stop, help
 ######################################################################
 
 ######################################################################
 # 1) Define directory paths for ConfigFS
 ######################################################################
+
+set -e
 
 CONFIGFS="/sys/kernel/config"       # base
 GADGET="$CONFIGFS/usb_gadget"       # gadget
@@ -189,6 +192,31 @@ create_uvc() {
 	ln -s functions/$FUNCTION configs/c.1
 }
 
+delete_uvc() {
+	# Example usage:
+	#	delete_uvc <target config> <function name>
+	#	delete_uvc config/c.1 uvc.0
+	CONFIG=$1
+	FUNCTION=$2
+	SUB="UAC2"
+	echo "	Deleting UVC gadget functionality : $FUNCTION"
+	rm $CONFIG/$FUNCTION
+	rm $CONFIG/$SUB
+
+	rm functions/$FUNCTION/control/class/*/h
+	rm functions/$FUNCTION/streaming/class/*/h
+	rm functions/$FUNCTION/streaming/header/h/u
+	rmdir functions/$FUNCTION/streaming/uncompressed/u/*/
+	rmdir functions/$FUNCTION/streaming/uncompressed/u
+	rm -rf functions/$FUNCTION/streaming/mjpeg/m/*/
+	rm -rf functions/$FUNCTION/streaming/mjpeg/m
+	rmdir functions/$FUNCTION/streaming/header/h
+	rmdir functions/$FUNCTION/control/header/h
+	rmdir functions/$FUNCTION
+
+	rm -rf functions/$SUB
+}
+
 
 ######################################################################
 # The Juice
@@ -198,68 +226,108 @@ modprobe libcomposite
 echo "Loading i2s audio capture card"
 modprobe i2s-driver
 
-cd $CONFIGFS
+case "$1" in
+    start)
+	cd $CONFIGFS
 
-# Device Descriptor Class directory
-mkdir -p $GADGET/g1
-cd $GADGET/g1
-echo $VENDOR_ID > idVendor
-echo $PRODUCT_ID > idProduct
-echo $BCD_DEVICE > bcdDevice
-echo $BCD_USB > bcdUSB
+	# Device Descriptor Class directory
+	mkdir -p $GADGET/g1
+	cd $GADGET/g1
+	echo $VENDOR_ID > idVendor
+	echo $PRODUCT_ID > idProduct
+	echo $BCD_DEVICE > bcdDevice
+	echo $BCD_USB > bcdUSB
 
-echo $BDESCTYPE > bDescriptorType
-echo $BDEVCLASS > bDeviceClass
-echo $BDEVSUBCLASS > bDeviceSubclass
-echo $BMAXPACKETSIZE > bMaxPacketSize0
-echo $BDEVPROTOCOL > bDeviceProtocol
-echo $IMANUF > iManufacturer
-echo $IPRODUCT > iProduct
-echo $SERIAL > iSerialNumber
-echo $NUMCONF > bNumConfigurations
-echo $BLENGTH > bLength
+	echo $BDESCTYPE > bDescriptorType
+	echo $BDEVCLASS > bDeviceClass
+	echo $BDEVSUBCLASS > bDeviceSubclass
+	echo $BMAXPACKETSIZE > bMaxPacketSize0
+	echo $BDEVPROTOCOL > bDeviceProtocol
+	echo $IMANUF > iManufacturer
+	echo $IPRODUCT > iProduct
+	echo $SERIAL > iSerialNumber
+	echo $NUMCONF > bNumConfigurations
+	echo $BLENGTH > bLength
 
-mkdir -p strings/0x409
-echo $SERIAL > strings/0x409/serialnumber
-echo $MANUF > strings/0x409/manufacturer
-echo $PRODUCT > strings/0x409/product
+	mkdir -p strings/0x409
+	echo $SERIAL > strings/0x409/serialnumber
+	echo $MANUF > strings/0x409/manufacturer
+	echo $PRODUCT > strings/0x409/product
 
-# ... jump to functions for symbolic-linking and file writes
-echo "Creating config: c.1"
-mkdir configs/c.1			# MaxPower, bmAttributes, strings
+	# ... jump to functions for symbolic-linking and file writes
+	echo "Creating config: c.1"
+	mkdir configs/c.1			# MaxPower, bmAttributes, strings
 
-# Create english string for configuration
-echo "Setting English strings"
-mkdir -p configs/c.1/strings/0x409
-CON_STR="UVC_UAC"
-echo $CON_STR > configs/c.1/strings/0x409/configuration
+	# Create english string for configuration
+	echo "Setting English strings"
+	mkdir -p configs/c.1/strings/0x409
+	CON_STR="UVC_UAC"
+	echo $CON_STR > configs/c.1/strings/0x409/configuration
 
-# Create UVC functions --> UVC for video USB video class
-echo "Creating UVC functions..."
-VIDEO="uvc.usb0"
-create_uvc configs/c.1 $VIDEO
+	# Create UVC functions --> UVC for video USB video class
+	echo "Creating UVC functions..."
+	VIDEO="uvc.usb0"
+	create_uvc configs/c.1 $VIDEO
 
-echo "uvc.usb0 functions OK"
+	echo "uvc.usb0 functions OK"
 
-cd $GADGET/g1
+	cd $GADGET/g1
 
-# Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
-echo "Creating UAC2 functions..."
-AUDIO="uac2.usb0"
-mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
-echo "uac2.usb0 functions OK"
+	# Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
+	echo "Creating UAC2 functions..."
+	AUDIO="uac2.usb0"
+	mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+	echo "uac2.usb0 functions OK"
 
-echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.usb0/c_chmask
-echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.usb0/c_srate
-echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.usb0/c_ssize
-echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.usb0/p_chmask
-echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.usb0/p_srate
-echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
+	echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.usb0/c_chmask
+	echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.usb0/c_srate
+	echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.usb0/c_ssize
+	echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.usb0/p_chmask
+	echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.usb0/p_srate
+	echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
 
-# Assigning configuration to functions
-echo "Linking c.1 to audio function uac2.usb0..."
-ln -s functions/$AUDIO configs/c.1/
+	# Assigning configuration to functions
+	echo "Linking c.1 to audio function uac2.usb0..."
+	ln -s functions/$AUDIO configs/c.1/
 
-echo "Binding USB Device Controller..."
-echo $UDC > UDC
-echo "Bounded to udc : $UDC"
+	echo "Binding USB Device Controller..."
+	echo $UDC > UDC
+	echo "Bounded to udc : $UDC"
+	;;
+
+	stop)
+	echo "Stopping the USB gadget"
+
+	set +e # Ignore all errors here on a best effort
+
+	cd $GADGET/g1
+
+	if [ $? -ne 0 ]; then
+	    echo "Error: no configfs gadget found"
+	    exit 1;
+	fi
+
+	echo "Unbinding USB Device Controller"
+	grep $UDC UDC && echo "" > UDC
+	echo "OK"
+
+	delete_uvc configs/c.1 uvc.usb0
+
+	echo "Clearing English strings"
+	rmdir strings/0x409
+	echo "OK"
+
+	echo "Cleaning up configuration"
+	rmdir configs/c.1/strings/0x409
+	rmdir configs/c.1
+	echo "OK"
+
+	echo "Removing gadget directory"
+	cd $GADGET
+	rmdir g1
+	cd /
+	echo "OK"
+	;;
+    *)
+	echo "Usage : $0 {start|stop}"
+esac
