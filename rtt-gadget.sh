@@ -31,7 +31,7 @@ MANUF="Runtime Terror"              # id
 PRODUCT="RTT Webcam"                # idProduct = RTT Webcam
 
 # Device Descriptor
-BLENGTH=0x18
+BLENGTH=0x12
 BCD_USB=0x0200		                # USB2.0
 BCD_DEVICE=0x0100	                # v.1.0.0
 
@@ -170,16 +170,16 @@ create_uvc() {
 	cd functions/$FUNCTION/streaming/header/h
 	ln -s ../../uncompressed/u
 	ln -s ../../mjpeg/m
-	cd ../../class/hs
+	cd ../../class/fs
 	ln -s ../../header/h
 	cd ../../class/hs
 	ln -s ../../header/h
-	cd ../../class/hs
+	cd ../../class/ss
 	ln -s ../../header/h
 	cd ../../../control
 	mkdir header/h
 	ln -s header/h class/hs
-	ln -s header/h class/ss
+	#ln -s header/h class/ss
 	cd ../../../
 
 	# This configures the USB endpoint to allow 3x 1024 byte packets per
@@ -201,7 +201,7 @@ delete_uvc() {
 	SUB="UAC2"
 	echo "	Deleting UVC gadget functionality : $FUNCTION"
 	rm $CONFIG/$FUNCTION
-	rm $CONFIG/$SUB
+	#rm $CONFIG/$SUB
 
 	rm functions/$FUNCTION/control/class/*/h
 	rm functions/$FUNCTION/streaming/class/*/h
@@ -214,7 +214,7 @@ delete_uvc() {
 	rmdir functions/$FUNCTION/control/header/h
 	rmdir functions/$FUNCTION
 
-	rm -rf functions/$SUB
+	#rm -rf functions/$SUB
 }
 
 
@@ -226,75 +226,61 @@ modprobe libcomposite
 echo "Loading i2s audio capture card"
 modprobe i2s-driver
 
+cd $CONFIGFS
+# Device Descriptor Class directory
+mkdir -p $GADGET/g1
+cd $GADGET/g1
+echo $VENDOR_ID > idVendor
+echo $PRODUCT_ID > idProduct
+echo $BCD_DEVICE > bcdDevice
+echo $BCD_USB > bcdUSB
+echo $BDESCTYPE > bDescriptorType
+echo $BDEVCLASS > bDeviceClass
+echo $BDEVSUBCLASS > bDeviceSubclass
+echo $BMAXPACKETSIZE > bMaxPacketSize0
+echo $BDEVPROTOCOL > bDeviceProtocol
+echo $IMANUF > iManufacturer
+echo $IPRODUCT > iProduct
+echo $SERIAL > iSerialNumber
+echo $NUMCONF > bNumConfigurations
+echo $BLENGTH > bLength
+mkdir -p strings/0x409
+echo $SERIAL > strings/0x409/serialnumber
+echo $MANUF > strings/0x409/manufacturer
+echo $PRODUCT > strings/0x409/product
+# ... jump to functions for symbolic-linking and file writes
+echo "Creating config: c.1"
+mkdir configs/c.1			# MaxPower, bmAttributes, strings
+# Create english string for configuration
+echo "Setting English strings"
+mkdir -p configs/c.1/strings/0x409
+CON_STR="UVC_UAC"
+#echo $CON_STR > configs/c.1/strings/0x409/configuration
+# Create UVC functions --> UVC for video USB video class
+echo "Creating UVC functions..."
+VIDEO="uvc.0"
+create_uvc configs/c.1 $VIDEO
+echo "uvc.0 functions OK"
+cd $GADGET/g1
+# Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
+#echo "Creating UAC2 functions..."
+#AUDIO="uac2.0"
+#mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+#echo "uac2.0 functions OK"
+#echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.0/c_chmask
+#echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.0/c_srate
+#echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.0/c_ssize
+#echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.0/p_chmask
+#echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.0/p_srate
+#echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.0/p_ssize
+# Assigning configuration to functions
+#echo "Linking c.1 to audio function uac2.0..."
+#ln -s functions/$AUDIO configs/c.1/
+echo "Binding USB Device Controller..."
+echo $UDC > UDC
+echo "Bounded to udc : $UDC"
+
 case "$1" in
-    start)
-	cd $CONFIGFS
-
-	# Device Descriptor Class directory
-	mkdir -p $GADGET/g1
-	cd $GADGET/g1
-	echo $VENDOR_ID > idVendor
-	echo $PRODUCT_ID > idProduct
-	echo $BCD_DEVICE > bcdDevice
-	echo $BCD_USB > bcdUSB
-
-	echo $BDESCTYPE > bDescriptorType
-	echo $BDEVCLASS > bDeviceClass
-	echo $BDEVSUBCLASS > bDeviceSubclass
-	echo $BMAXPACKETSIZE > bMaxPacketSize0
-	echo $BDEVPROTOCOL > bDeviceProtocol
-	echo $IMANUF > iManufacturer
-	echo $IPRODUCT > iProduct
-	echo $SERIAL > iSerialNumber
-	echo $NUMCONF > bNumConfigurations
-	echo $BLENGTH > bLength
-
-	mkdir -p strings/0x409
-	echo $SERIAL > strings/0x409/serialnumber
-	echo $MANUF > strings/0x409/manufacturer
-	echo $PRODUCT > strings/0x409/product
-
-	# ... jump to functions for symbolic-linking and file writes
-	echo "Creating config: c.1"
-	mkdir configs/c.1			# MaxPower, bmAttributes, strings
-
-	# Create english string for configuration
-	echo "Setting English strings"
-	mkdir -p configs/c.1/strings/0x409
-	CON_STR="UVC_UAC"
-	echo $CON_STR > configs/c.1/strings/0x409/configuration
-
-	# Create UVC functions --> UVC for video USB video class
-	echo "Creating UVC functions..."
-	VIDEO="uvc.usb0"
-	create_uvc configs/c.1 $VIDEO
-
-	echo "uvc.usb0 functions OK"
-
-	cd $GADGET/g1
-
-	# Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
-	echo "Creating UAC2 functions..."
-	AUDIO="uac2.usb0"
-	mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
-	echo "uac2.usb0 functions OK"
-
-	echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.usb0/c_chmask
-	echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.usb0/c_srate
-	echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.usb0/c_ssize
-	echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.usb0/p_chmask
-	echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.usb0/p_srate
-	echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
-
-	# Assigning configuration to functions
-	echo "Linking c.1 to audio function uac2.usb0..."
-	ln -s functions/$AUDIO configs/c.1/
-
-	echo "Binding USB Device Controller..."
-	echo $UDC > UDC
-	echo "Bounded to udc : $UDC"
-	;;
-
 	stop)
 	echo "Stopping the USB gadget"
 
@@ -311,7 +297,7 @@ case "$1" in
 	grep $UDC UDC && echo "" > UDC
 	echo "OK"
 
-	delete_uvc configs/c.1 uvc.usb0
+	delete_uvc configs/c.1 uvc.0
 
 	echo "Clearing English strings"
 	rmdir strings/0x409
@@ -329,5 +315,5 @@ case "$1" in
 	echo "OK"
 	;;
     *)
-	echo "Usage : $0 {start|stop}"
+	echo "Usage : $0 {stop}"
 esac
