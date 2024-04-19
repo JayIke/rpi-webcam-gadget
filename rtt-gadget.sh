@@ -82,11 +82,11 @@ VEP_BLENGTH=0x07
 #TBC
 
 # Audio
-UDIO_CHANNEL_MASK_CAPTURE=0		# 1=Left 2=Right 3=Stereo 0=disables the device
+AUDIO_CHANNEL_MASK_CAPTURE=0		# 1=Left 2=Right 3=Stereo 0=disables the device
 AUDIO_CHANNEL_MASK_PLAYBACK=3
-#AUDIO_SAMPLE_RATES_CAPTURE=48000
+AUDIO_SAMPLE_RATES_CAPTURE=48000
 AUDIO_SAMPLE_RATES_PLAYBACK=48000
-#AUDIO_SAMPLE_SIZE_CAPTURE=4		# 1 for S8LE / 2 for S16LE / 3 for S24LE / 4 for S32LE
+AUDIO_SAMPLE_SIZE_CAPTURE=4		# 1 for S8LE / 2 for S16LE / 3 for S24LE / 4 for S32LE
 AUDIO_SAMPLE_SIZE_PLAYBACK=4
 
 ###################################################################### 
@@ -108,6 +108,9 @@ create_frame() {
 	echo $WIDTH > $wdir/wWidth
 	echo $HEIGHT > $wdir/wHeight
 	echo $(( $WIDTH * $HEIGHT * 2 )) > $wdir/dwMaxVideoFrameBufferSize
+	echo "333333" > $wdir/dwDefaultFrameInterval
+
+	# has to be writable for future changes, hence the format
 	cat <<EOF > $wdir/dwFrameInterval
 $6
 EOF
@@ -164,15 +167,15 @@ create_uvc() {
 	cd functions/$FUNCTION/streaming/header/h
 	ln -s ../../uncompressed/u
 	ln -s ../../mjpeg/m
-	cd ../../class/fs
+	cd ../../class/hs
 	ln -s ../../header/h
 	cd ../../class/hs
 	ln -s ../../header/h
-	cd ../../class/ss
+	cd ../../class/hs
 	ln -s ../../header/h
 	cd ../../../control
 	mkdir header/h
-	ln -s header/h class/fs
+	ln -s header/h class/hs
 	ln -s header/h class/ss
 	cd ../../../
 
@@ -180,8 +183,9 @@ create_uvc() {
 	# microframe, which gives us the maximum speed for USB 2.0. Other
 	# valid values are 1024 and 2048, but these will result in a lower
 	# supportable framerate.
-	echo 1024 > functions/$FUNCTION/streaming_maxpacket
-
+	echo 3072 > functions/$FUNCTION/streaming_maxpacket
+	#echo 2048 > functions/$FUNCTION/streaming_maxpacket
+	#echo 1024 > functions/$FUNCTION/streaming_maxpacket
 	ln -s functions/$FUNCTION configs/c.1
 }
 
@@ -221,3 +225,41 @@ echo $MANUF > strings/0x409/manufacturer
 echo $PRODUCT > strings/0x409/product
 
 # ... jump to functions for symbolic-linking and file writes
+echo "Creating config: c.1"
+mkdir configs/c.1			# MaxPower, bmAttributes, strings
+
+# Create english string for configuration
+echo "Setting English strings"
+mkdir -p configs/c.1/strings/0x409
+CON_STR="UVC_UAC"
+echo $CON_STR > configs/c.1/strings/0x409/configuration
+
+# Create UVC functions --> UVC for video USB video class
+echo "Creating UVC functions..."
+VIDEO="uvc.usb0"
+create_uvc configs/c.1 $VIDEO
+
+echo "uvc.usb0 functions OK"
+
+cd $GADGET/g1
+
+# Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
+echo "Creating UAC2 functions..."
+AUDIO="uac2.usb0"
+mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+echo "uac2.usb0 functions OK"
+
+echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.usb0/c_chmask
+echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.usb0/c_srate
+echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.usb0/c_ssize
+echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.usb0/p_chmask
+echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.usb0/p_srate
+echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
+
+# Assigning configuration to functions
+echo "Linking c.1 to audio function uac2.usb0..."
+ln -s functions/$AUDIO configs/c.1/
+
+echo "Binding USB Device Controller..."
+echo $UDC > UDC
+echo "Bounded to udc : $UDC"
