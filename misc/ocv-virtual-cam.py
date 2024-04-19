@@ -4,7 +4,7 @@ import cv2
 import fcntl
 from v4l2 import (
     v4l2_format, v4l2_capability, VIDIOC_G_FMT, V4L2_BUF_TYPE_VIDEO_OUTPUT, V4L2_PIX_FMT_RGB24,
-    V4L2_FIELD_NONE, VIDIOC_S_FMT, VIDIOC_QUERYCAP
+    V4L2_FIELD_NONE, VIDIOC_S_FMT, VIDIOC_EXPBUF, VIDIOC_QUERYCAP
 )
 print("OpenCV version: "+cv2.__version__)
 
@@ -24,7 +24,7 @@ def main():
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, VID_HEIGHT)
 
     try:
-        output = os.open(VIDEO_OUT, os.O_RDWR)
+        output = os.open(VIDEO_OUT, os.O_RDWR | os.O_NONBLOCK)
     except Exception as ex:
         print("ERROR: could not open output device!")
         print(str(ex))
