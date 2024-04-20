@@ -14,9 +14,11 @@ Power Estimate:
 3. I2S mics (2x) draws about --> 5.00V * 600uA * 2 = 0.006W - a lemon could power this - negligble (10uA sleep)
 4. buttons/led - low
 
+Everything about Pipewire: https://github.com/mikeroyal/PipeWire-Guide#installing-pipewire-for-debian
+
 ## Video Processing and Software Stack
 The Big Picture:
-The `Libcamera` software stack is primarily responsible for enabling access to camera data. It bypasses the GPU of which users do not have access to and provides the API interface for applications. Our AI functions are built on top of this framework. The computer vision library, `opencv`, will be responsible for autonomously manipulating the live video stream. Autonomous behavior is defined by the combination of logic, prebuilt ML models, and event loops. However, `opencv` (for some reason) relies on `pycamera2` to grab frames. `v4l2` (Linux video/camera kernel interface) is the low-level interface between user-space and the kernel. The goal is to define a camera system comprised of the following software grouped by function:
+The `Libcamera` software stack is primarily responsible for enabling access to camera data. It bypasses the GPU of which users do not have access to and provides the API interface for applications. Our AI functions are built on top of this framework. The computer vision library, `opencv`, will be responsible for autonomously manipulating the live video stream. Autonomous behavior is defined by the combination of logic, prebuilt ML models, and event loops. However, `opencv` (for some reason) relies on `pycamera2` to grab frames. `v4l2` (Linux video/camera kernel interface) is the low-level interface between user-space and the kernel. The goal is to define a real time processing camera system comprised of the following software grouped by function:
 1) Computer vision and processing --> `opencv` and `picamera2` will work together to acquire and manipulate frames.
   To do: Direct output to an images/slideshow directory, buffer, or other output type accessible by uvc-gadget program.
 2) Host-side Control and GPIO signaling - Build on top of working `ConfigFS` framework in the `processing` or `extension unit (xu)` directory to query and respond to IOCTL requests and GPIO signals. For example, toggle blur effect or camera stream on and off. File descriptors in this directory rely on the uvc-chain configuration (source/output ids). May need to tear down or build up  after disable or enable signal is received - in runtime.
@@ -57,25 +59,6 @@ Example --> application extracts `CompletedRequestPtr` from the message, which i
 Eventually we want to start/stop/toggle between stream delivery methods effectively and without locking up memory or controls. The first step is to install buttons to gpio and listen using the pigpiozero lib (.py) to trigger basic terminal commands. The next step will be to pass/emit events to the correct places - if it's not too involved. We may have to just pass hard start and kill cmds to terminal to emulate (fake) some sophisticated level of control.
 
 we'll have to handle events differently depending on whether we initialize a v4l2 or libcamera source - see bottom of this page for v4l2 and libcamera source driver snippets.
-```C
-	/*
-	 * Create the events handler. Register a signal handler for SIGINT,
-	 * received when the user presses CTRL-C. This will allow the main loop
-	 * to be interrupted, and resources to be freed cleanly.
-	 */
-	events_init(&events);
-
-	sigint_events = &events;
-	signal(SIGINT, sigint_handler);
-
-if (cap_device)
-	v4l2_video_source_init(src, &events);
-
-#ifdef HAVE_LIBCAMERA
-	if (camera)
-		libcamera_source_init(src, &events);
-#endif
-```
 
 [Danny's UVC breakdown](https://github.com/odin5on/pi-webcam/blob/main/uvc-explained.md)
 
@@ -391,4 +374,23 @@ static const struct video_source_ops v4l2_source_ops = {
 	.stream_off = v4l2_source_stream_off,
 	.queue_buffer = v4l2_source_queue_buffer,
 };
+```
+```C
+	/*
+	 * Create the events handler. Register a signal handler for SIGINT,
+	 * received when the user presses CTRL-C. This will allow the main loop
+	 * to be interrupted, and resources to be freed cleanly.
+	 */
+	events_init(&events);
+
+	sigint_events = &events;
+	signal(SIGINT, sigint_handler);
+
+if (cap_device)
+	v4l2_video_source_init(src, &events);
+
+#ifdef HAVE_LIBCAMERA
+	if (camera)
+		libcamera_source_init(src, &events);
+#endif
 ```
