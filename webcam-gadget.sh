@@ -65,10 +65,10 @@ echo $PRODUCT > strings/0x409/product
 #########################################
 AUDIO_CHANNEL_MASK_CAPTURE=3		# 1=Left 2=Right 3=Stereo 0=disables the device
 AUDIO_CHANNEL_MASK_PLAYBACK=3
-AUDIO_SAMPLE_RATES_CAPTURE=44100,48000
-AUDIO_SAMPLE_RATES_PLAYBACK=44100,48000
+AUDIO_SAMPLE_RATES_CAPTURE=48000
+AUDIO_SAMPLE_RATES_PLAYBACK=48000
 AUDIO_SAMPLE_SIZE_CAPTURE=4		# 1 for S8LE / 2 for S16LE / 3 for S24LE / 4 for S32LE
-AUDIO_SAMPLE_SIZE_PLAYBACK=2
+AUDIO_SAMPLE_SIZE_PLAYBACK=4
 
 
 # Later on, this function is used to tell the usb video subsystem that we want
@@ -202,9 +202,9 @@ echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
 echo "Linking c.1 to audio function uac2.usb0..."
 ln -s functions/$AUDIO configs/c.1/
 
-echo "Binding USB Device Controller..."
-echo $UDC > UDC
-echo "Bounded to udc : $UDC"
+#echo "Binding USB Device Controller..."
+#echo $UDC > UDC
+#echo "Bounded to udc : $UDC"
 
 # Add resolutions
 #mkdir -p functions/$FUNCTION/streaming/uncompressed/u/360p

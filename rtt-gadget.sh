@@ -5,14 +5,13 @@
 # File: ~/.rtt-gadget.sh
 # Description: Configure as UVC device with audio subclass (UAC2)
 #              using the IAD class (Interface Association Descriptor)
-# Options: start, stop, help
 ######################################################################
 
 ######################################################################
 # 1) Define directory paths for ConfigFS
 ######################################################################
 
-set -e
+
 
 CONFIGFS="/sys/kernel/config"       # base
 GADGET="$CONFIGFS/usb_gadget"       # gadget
@@ -126,7 +125,11 @@ create_uvc() {
 	FUNCTION=$2
 
 	echo "	Creating UVC gadget functionality : $FUNCTION"
-	mkdir functions/$FUNCTION
+	mkdir -p functions/$FUNCTION
+	# Interface association descriptor
+	#mkdir functions/$FUNCTION/interface.0
+	#mkdir functions/$FUNCTION/interface.1
+
 
 	create_frame $FUNCTION 640 480 uncompressed u "333333
 416667
@@ -178,7 +181,7 @@ create_uvc() {
 	ln -s ../../header/h
 	cd ../../../control
 	mkdir header/h
-	ln -s header/h class/hs
+	#ln -s header/h class/hs
 	#ln -s header/h class/ss
 	cd ../../../
 
@@ -186,7 +189,7 @@ create_uvc() {
 	# microframe, which gives us the maximum speed for USB 2.0. Other
 	# valid values are 1024 and 2048, but these will result in a lower
 	# supportable framerate.
-	echo 3072 > functions/$FUNCTION/streaming_maxpacket
+	echo 2048 > functions/$FUNCTION/streaming_maxpacket
 	#echo 2048 > functions/$FUNCTION/streaming_maxpacket
 	#echo 1024 > functions/$FUNCTION/streaming_maxpacket
 	ln -s functions/$FUNCTION configs/c.1
@@ -221,15 +224,21 @@ delete_uvc() {
 ######################################################################
 # The Juice
 ######################################################################
-echo "Loading composite module"
-modprobe libcomposite
-echo "Loading i2s audio capture card"
+#echo "Loading composite module"
+#modprobe libcomposite
 modprobe i2s-driver
 
 cd $CONFIGFS
-# Device Descriptor Class directory
 mkdir -p $GADGET/g1
 cd $GADGET/g1
+
+mkdir -p strings/0x409
+echo $SERIAL > strings/0x409/serialnumber
+echo $MANUF > strings/0x409/manufacturer
+echo $PRODUCT > strings/0x409/product
+
+
+# Device Descriptor Class directory
 echo $VENDOR_ID > idVendor
 echo $PRODUCT_ID > idProduct
 echo $BCD_DEVICE > bcdDevice
@@ -244,19 +253,16 @@ echo $IPRODUCT > iProduct
 echo $SERIAL > iSerialNumber
 echo $NUMCONF > bNumConfigurations
 echo $BLENGTH > bLength
-mkdir -p strings/0x409
-echo $SERIAL > strings/0x409/serialnumber
-echo $MANUF > strings/0x409/manufacturer
-echo $PRODUCT > strings/0x409/product
+
+
+
 # ... jump to functions for symbolic-linking and file writes
 echo "Creating config: c.1"
-mkdir configs/c.1			# MaxPower, bmAttributes, strings
+mkdir -p configs/c.1			# MaxPower, bmAttributes, strings
 # Create english string for configuration
 echo "Setting English strings"
 mkdir -p configs/c.1/strings/0x409
-CON_STR="UVC_UAC"
-#echo $CON_STR > configs/c.1/strings/0x409/configuration
-# Create UVC functions --> UVC for video USB video class
+
 echo "Creating UVC functions..."
 VIDEO="uvc.0"
 create_uvc configs/c.1 $VIDEO
@@ -265,55 +271,17 @@ cd $GADGET/g1
 # Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
 #echo "Creating UAC2 functions..."
 #AUDIO="uac2.0"
-#mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
-#echo "uac2.0 functions OK"
-#echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.0/c_chmask
-#echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.0/c_srate
-#echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.0/c_ssize
-#echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.0/p_chmask
-#echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.0/p_srate
-#echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.0/p_ssize
+mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+echo "uac2. functions OK"
+echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.0/c_chmask
+echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.0/c_srate
+echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.0/c_ssize
+echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.0/p_chmask
+echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.0/p_srate
+echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.0/p_ssize
 # Assigning configuration to functions
-#echo "Linking c.1 to audio function uac2.0..."
-#ln -s functions/$AUDIO configs/c.1/
+echo "Linking c.1 to audio function uac2.0..."
+ln -s functions/$AUDIO configs/c.1
 echo "Binding USB Device Controller..."
 echo $UDC > UDC
 echo "Bounded to udc : $UDC"
-
-case "$1" in
-	stop)
-	echo "Stopping the USB gadget"
-
-	set +e # Ignore all errors here on a best effort
-
-	cd $GADGET/g1
-
-	if [ $? -ne 0 ]; then
-	    echo "Error: no configfs gadget found"
-	    exit 1;
-	fi
-
-	echo "Unbinding USB Device Controller"
-	grep $UDC UDC && echo "" > UDC
-	echo "OK"
-
-	delete_uvc configs/c.1 uvc.0
-
-	echo "Clearing English strings"
-	rmdir strings/0x409
-	echo "OK"
-
-	echo "Cleaning up configuration"
-	rmdir configs/c.1/strings/0x409
-	rmdir configs/c.1
-	echo "OK"
-
-	echo "Removing gadget directory"
-	cd $GADGET
-	rmdir g1
-	cd /
-	echo "OK"
-	;;
-    *)
-	echo "Usage : $0 {stop}"
-esac

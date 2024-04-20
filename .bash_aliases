@@ -12,7 +12,9 @@
 # AI, Video and Audio
 
 # Show camera devices v4l recognizes
-alias show-video='v4l2-ctl --list-devices'
+alias lscam='v4l2-ctl --list-devices'
+
+alias lstree='tree /sys/kernel/config/usb_gadget/g1/'
 
 # Show audio capture and playback soundcards
 alias show-audio='arecord -l && aplay -l'
