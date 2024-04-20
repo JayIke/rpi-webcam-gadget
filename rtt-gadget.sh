@@ -24,7 +24,7 @@ UDC=`ls /sys/class/udc`             # 3f980000.usb (ep0 - control reqs)
 
 # Strings
 VENDOR_ID="0x045E"                  # idProduct = RTT
-PRODUCT_ID="0xFFFF"                 # idProduct = 0x0728 / 0x0104 multi-function / 0xa4a2 try 
+PRODUCT_ID="0x0728"                 # idProduct = 0x0728 / 0x0104 multi-function / 0xa4a2 try 
 SERIAL="31942399"                   # serial
 MANUF="0x02"              			# id
 PRODUCT="RTT Webcam"                # iProduct = RTT Webcam
