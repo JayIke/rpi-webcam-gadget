@@ -23,17 +23,32 @@
 #include <linux/platform_device.h>
 #include <sound/simple_card.h>
 #include <linux/delay.h>
+#include <linux/media.h>
+#include <fcntl.h>
+
+#include <linux/export.h>
+#include <linux/mm.h>
+#include <linux/slab.h>
+#include <media/v4l2-ctrls.h>
+#include <media/v4l2-dev.h>
+#include <media/v4l2-device.h>
+#include <media/v4l2-event.h>
+#include <media/v4l2-ioctl.h>
+
 
 
 
 void device_release_callback(struct device *dev) { /*  do nothing */ };
 
-/*  ASoC - ALSA System on Chip: Kernel subsys for portable audio codecs
+/**
+ *  ASoC - ALSA System on Chip: Kernel subsys for portable audio codecs
  *  
  *  ASoc Platform Drivers: Audio DMA, SoC DAI, DSP.  
  *
  *  DAI - Digital Audio Interface: We are using the I2S interface
- */
+ * 
+ * 
+*/
 
 static struct asoc_simple_card_info snd_rpi_simple_card_info = {
     .card = "i2s-microphone", // -> snd_rpi_simple_card -> snd_soc_card.name

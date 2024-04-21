@@ -62,7 +62,7 @@ static struct platform_device snd_rpi_simple_card_device = {
 
 int hello_init(void)
 {
-const char *dmaengine = "bcm2709-dmaengine"; // bcm2709 for rpi Z2W, 32-bit
+const char *dmaengine = "bcm2708-dmaengine"; // bcm2709 for rpi Z2W, 32-bit? no? ret=256
 int ret;
 
 ret = request_module(dmaengine);
