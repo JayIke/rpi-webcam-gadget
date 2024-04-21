@@ -173,33 +173,33 @@ mkdir configs/c.1			# MaxPower, bmAttributes, strings
 # Create english string for configuration
 echo "Setting English strings"
 mkdir -p configs/c.1/strings/0x409
-CON_STR="UVC_UAC"
-echo $CON_STR > configs/c.1/strings/0x409/configuration
+#CON_STR="UVC_UAC"
+#echo $CON_STR > configs/c.1/strings/0x409/configuration
 
 # Create UVC functions --> UVC for video USB video class
 echo "Creating UVC functions..."
-VIDEO="uvc.usb0"
+VIDEO="uvc.0"
 create_uvc configs/c.1 $VIDEO
 
-echo "uvc.usb0 functions OK"
+echo "uvc.0 functions OK"
 
 cd $GADGET/g1
 
 # Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
 echo "Creating UAC2 functions..."
-AUDIO="uac2.usb0"
+AUDIO="uac2.1"
 mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
-echo "uac2.usb0 functions OK"
+echo "uac2.1 functions OK"
 
-echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.usb0/c_chmask
-echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.usb0/c_srate
-echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.usb0/c_ssize
-echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.usb0/p_chmask
-echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.usb0/p_srate
-echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
+echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.1/c_chmask
+echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.1/c_srate
+echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.1/c_ssize
+echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.1/p_chmask
+echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.1/p_srate
+echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.1/p_ssize
 
 # Assigning configuration to functions
-echo "Linking c.1 to audio function uac2.usb0..."
+echo "Linking c.1 to audio function uac2.1..."
 ln -s functions/$AUDIO configs/c.1/
 
 #echo "Binding USB Device Controller..."
