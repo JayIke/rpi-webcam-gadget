@@ -23,9 +23,9 @@ UDC=`ls /sys/class/udc`             # 3f980000.usb (ep0 - control reqs)
 ######################################################################
 
 # Strings
-VENDOR_ID="0x045E"                  # idProduct = RTT
-PRODUCT_ID="0x0728"                 # idProduct = 0x0728 / 0x0104 multi-function / 0xa4a2 try 
-SERIAL="31942399"                   # serial
+VENDOR_ID="0x0525"                  # idProduct = RTT
+PRODUCT_ID="0xa4a2"                 # idProduct = 0x0728 / 0x0104 multi-function / 0xa4a2 try 
+SERIAL="0123012301"                   # serial
 MANUF="0x02"              			# id
 PRODUCT="RTT Webcam"                # iProduct = RTT Webcam
 
@@ -36,10 +36,10 @@ BCD_DEVICE=0x0100	                # v.1.0.0
 
 ## Assign specific values to class, sub, and prototype to enable IAD mode: 
 BDEVCLASS=0xEF                      ## Miscellaneous (Composite)
-BDEVSUBCLASS="0x02"                   ## Multiple interfaces or CDC
+BDEVSUBCLASS=0x02                   ## Multiple interfaces or CDC
 BDEVPROTOCOL=0x01                   ## 0x01 = (Interface Association Descriptor - IAD)
 
-BMAXPACKETSIZE=0x40                 # bMaxPacketSize0 = 0x40 (64)
+#BMAXPACKETSIZE=0x40                 # bMaxPacketSize0 = 0x40 (64)
 BDESCTYPE=0x01                      # 0x01 = (DEVICE descriptor)
 NUMCONF=0x01                        # using only 1 config
 
@@ -110,7 +110,7 @@ create_frame() {
 	echo $WIDTH > $wdir/wWidth
 	echo $HEIGHT > $wdir/wHeight
 	echo $(( $WIDTH * $HEIGHT * 2 )) > $wdir/dwMaxVideoFrameBufferSize
-	echo "333333" > $wdir/dwDefaultFrameInterval
+	#echo "333333" > $wdir/dwDefaultFrameInterval
 
 	# has to be writable for future changes, hence the format
 	cat <<EOF > $wdir/dwFrameInterval
@@ -125,7 +125,7 @@ create_uvc() {
 	FUNCTION=$2
 
 	echo "	Creating UVC gadget functionality : $FUNCTION"
-	mkdir -p functions/$FUNCTION
+	mkdir functions/$FUNCTION
 	# Interface association descriptor
 	#mkdir functions/$FUNCTION/interface.0
 	#mkdir functions/$FUNCTION/interface.1
@@ -181,7 +181,7 @@ create_uvc() {
 	ln -s ../../header/h
 	cd ../../../control
 	mkdir header/h
-	ln -s header/h class/hs
+	ln -s header/h class/fs
 	ln -s header/h class/ss
 	cd ../../../
 
@@ -231,36 +231,29 @@ modprobe i2s-driver
 cd $CONFIGFS
 mkdir -p $GADGET/g1
 cd $GADGET/g1
-echo $BDEVCLASS > bDeviceClass
-echo $BDEVSUBCLASS > bDeviceSubclass
-echo $BDEVPROTOCOL > bDeviceProtocol
-echo $BMAXPACKETSIZE > bMaxPacketSize0
+
 
 # Device Descriptor Class directory
 echo $VENDOR_ID > idVendor
 echo $PRODUCT_ID > idProduct
 echo $BCD_DEVICE > bcdDevice
 echo $BCD_USB > bcdUSB
+echo $BDEVCLASS > bDeviceClass
+echo $BDEVSUBCLASS > bDeviceSubclass
+echo $BDEVPROTOCOL > bDeviceProtocol
+echo $BMAXPACKETSIZE > bMaxPacketSize0
 
 mkdir -p strings/0x409
 echo $SERIAL > strings/0x409/serialnumber
 echo $MANUF > strings/0x409/manufacturer
 echo $PRODUCT > strings/0x409/product
-echo $NUMCONF > strings/0x409/bNumConfigurations
-echo $BLENGTH > strings/0x409/bLength
-echo $BDESCTYPE > strings/0x409/bDescriptorType
+#echo $NUMCONF > strings/0x409/bNumConfigurations
+#echo $BLENGTH > strings/0x409/bLength
+#echo $BDESCTYPE > strings/0x409/bDescriptorType
 
-echo $IMANUF > iManufacturer
-echo $IPRODUCT > iProduct
-echo $SERIAL > iSerialNumber
-
-
-
-
-
-
-
-
+#echo $IMANUF > iManufacturer
+#echo $IPRODUCT > iProduct
+#echo $SERIAL > iSerialNumber
 
 
 # ... jump to functions for symbolic-linking and file writes
