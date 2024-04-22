@@ -231,6 +231,11 @@ modprobe i2s-driver
 cd $CONFIGFS
 mkdir -p $GADGET/g1
 cd $GADGET/g1
+echo $BDEVCLASS > bDeviceClass
+echo $BDEVSUBCLASS > bDeviceSubclass
+echo $BDEVPROTOCOL > bDeviceProtocol
+echo $BMAXPACKETSIZE > bMaxPacketSize0
+
 
 mkdir -p strings/0x409
 echo $SERIAL > strings/0x409/serialnumber
@@ -243,11 +248,8 @@ echo $VENDOR_ID > idVendor
 echo $PRODUCT_ID > idProduct
 echo $BCD_DEVICE > bcdDevice
 echo $BCD_USB > bcdUSB
-echo $BDESCTYPE > bDescriptorType
-echo $BDEVCLASS > bDeviceClass
-echo $BDEVSUBCLASS > bDeviceSubclass
-echo $BMAXPACKETSIZE > bMaxPacketSize0
-echo $BDEVPROTOCOL > bDeviceProtocol
+#echo $BDESCTYPE > bDescriptorType
+
 echo $IMANUF > iManufacturer
 echo $IPRODUCT > iProduct
 echo $SERIAL > iSerialNumber
