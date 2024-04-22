@@ -236,25 +236,30 @@ echo $BDEVSUBCLASS > bDeviceSubclass
 echo $BDEVPROTOCOL > bDeviceProtocol
 echo $BMAXPACKETSIZE > bMaxPacketSize0
 
-
-mkdir -p strings/0x409
-echo $SERIAL > strings/0x409/serialnumber
-echo $MANUF > strings/0x409/manufacturer
-echo $PRODUCT > strings/0x409/product
-
-
 # Device Descriptor Class directory
 echo $VENDOR_ID > idVendor
 echo $PRODUCT_ID > idProduct
 echo $BCD_DEVICE > bcdDevice
 echo $BCD_USB > bcdUSB
-#echo $BDESCTYPE > bDescriptorType
+
+mkdir -p strings/0x409
+echo $SERIAL > strings/0x409/serialnumber
+echo $MANUF > strings/0x409/manufacturer
+echo $PRODUCT > strings/0x409/product
+echo $NUMCONF > strings/0x409/bNumConfigurations
+echo $BLENGTH > strings/0x409/bLength
+echo $BDESCTYPE > strings/0x409/bDescriptorType
 
 echo $IMANUF > iManufacturer
 echo $IPRODUCT > iProduct
 echo $SERIAL > iSerialNumber
-echo $NUMCONF > bNumConfigurations
-echo $BLENGTH > bLength
+
+
+
+
+
+
+
 
 
 
