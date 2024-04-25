@@ -16,13 +16,12 @@ led1 = LED(5)        # GPIO.BOARD pin 29
 
 # Function to handle USB camera via subprocess
 def USBcamera():
-    # Just run the configFS part (without uvc-gadget -c 0 uvc.0)
+    # run the configFS script including line --> uvc-gadget -c 0 uvc.0
     subprocess.run(["/bin/bash", "/home/jordin/.original.sh"])
     
 def Ninacamera():
-    # Run the uvc-gadget driver and store pid to kill later
+    # Run nina's code
     subprocess.run(["~/cam2.py"])
-    
 
 # Pass the proc you're trying to kill
 def SearchAndDestroy(CURRENT):
