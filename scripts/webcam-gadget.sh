@@ -23,14 +23,16 @@ GADGET="$CONFIGFS/usb_gadget"
 # Basic Strings
 #######################
 VID="0x0525"
-PID="0x0104"		# 0x0104 multi-function / 0x0101 for audio gadget / 0xa4a2 uvc-webcam?
+PID="0xa4a2"		# 0x0104 multi-function / 0x0101 for audio gadget / 0xa4a2 uvc-webcam?
 SERIAL="0123456789"
 MANUF=$(hostname)
 PRODUCT="RTT Gadget"
-BCD_DEVICE=0x0100	# v.1.0.0
+BCD_DEVICE=0x0100	# 0x0100 v.1.0.0
 BCD_USB=0x0200		# USB2.0
-
-
+BDEVCLASS=0x10h		# 0x10h (Base Device Class) USB Audio/Video Base Class
+BDEVSUB=0x01h		# 0x01h AVControl Interface
+VIDSUB=0x02h		# Video Streaming Interface
+AUDIOSUB=0x03h		# Audio Streaming Interface
 ##############################################
 # Load modules
 # libcomposite: allows us to define our device
@@ -102,11 +104,8 @@ create_uvc() {
 	FUNCTION=$2
 
 	echo "	Creating UVC gadget functionality : $FUNCTION"
-	mkdir -p functions
-	#echo `ls functions`
 	mkdir functions/$FUNCTION
-	mkdir functions/uac2.0
-	
+
 	create_frame $FUNCTION 640 480 uncompressed u "333333
 416667
 500000
@@ -119,7 +118,8 @@ create_uvc() {
 1333333
 2000000
 "
-	create_frame $FUNCTION 1920 1080 uncompressed u "2000000"
+	create_frame $FUNCTION 1920 1080 uncompressed u "2000000
+"
 	create_frame $FUNCTION 640 480 mjpeg m "333333
 416667
 500000
@@ -165,7 +165,7 @@ create_uvc() {
 	# microframe, which gives us the maximum speed for USB 2.0. Other
 	# valid values are 1024 and 2048, but these will result in a lower
 	# supportable framerate.
-	echo 2048 > functions/$FUNCTION/streaming_maxpacket
+	echo 1024 > functions/$FUNCTION/streaming_maxpacket
 
 	ln -s functions/$FUNCTION configs/c.1
 }
@@ -177,40 +177,40 @@ mkdir configs/c.1			# MaxPower, bmAttributes, strings
 # Create english string for configuration
 echo "Setting English strings"
 mkdir -p configs/c.1/strings/0x409
-#CON_STR="UVC_UAC"
-#echo $CON_STR > configs/c.1/strings/0x409/configuration
+CON_STR="UVC_UAC"
+echo $CON_STR > configs/c.1/strings/0x409/configuration
 
 # Create UVC functions --> UVC for video USB video class
 echo "Creating UVC functions..."
-VIDEO="uvc.0"
+VIDEO="uvc.usb0"
 create_uvc configs/c.1 $VIDEO
 
-echo "uvc.0 functions OK"
+echo "uvc.usb0 functions OK"
 
 cd $GADGET/g1
 
 # Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
-#echo "Creating UAC2 functions..."
-#AUDIO="uac2.0"
-#mkdir functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
-#echo "uac2.0 functions OK"
+echo "Creating UAC2 functions..."
+AUDIO="uac2.usb0"
+mkdir functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+echo "uac2.usb0 functions OK"
 
-echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.0/c_chmask
-echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.0/c_srate
-echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.0/c_ssize
-echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.0/p_chmask
-echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.0/p_srate
-echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.0/p_ssize
+echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.usb0/c_chmask
+echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.usb0/c_srate
+echo $AUDIO_SAMPLE_SIZE_CAPTURE > functions/uac2.usb0/c_ssize
+echo $AUDIO_CHANNEL_MASK_PLAYBACK > functions/uac2.usb0/p_chmask
+echo $AUDIO_SAMPLE_RATES_PLAYBACK > functions/uac2.usb0/p_srate
+echo $AUDIO_SAMPLE_SIZE_PLAYBACK > functions/uac2.usb0/p_ssize
 
 # Assigning configuration to functions
-echo "Linking c.1 to audio function uac2.1..."
-ln -s functions/$AUDIO configs/c.1
+echo "Linking c.1 to audio function uac2.usb0..."
+ln -s functions/$AUDIO configs/c.1/
 
-echo 0xeh > bDeviceClass
-echo 0x02 > bDeviceSubclass
 echo "Binding USB Device Controller..."
 echo $UDC > UDC
 echo "Bounded to udc : $UDC"
+
+#uvc-gadget -c 0 uvc.usb0
 
 # Add resolutions
 #mkdir -p functions/$FUNCTION/streaming/uncompressed/u/360p
