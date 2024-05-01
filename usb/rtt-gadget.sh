@@ -11,11 +11,8 @@
 # 1) Define directory paths for ConfigFS
 ######################################################################
 
-
-
 CONFIGFS="/sys/kernel/config"       # base
 GADGET="$CONFIGFS/usb_gadget"       # gadget
-
 UDC=`ls /sys/class/udc`             # 3f980000.usb (ep0 - control reqs)
 
 ######################################################################
@@ -24,8 +21,8 @@ UDC=`ls /sys/class/udc`             # 3f980000.usb (ep0 - control reqs)
 
 # Strings
 VENDOR_ID="0x0525"                  # idProduct = RTT
-PRODUCT_ID="0xa4a2"                 # idProduct = 0x0728 / 0x0104 multi-function / 0xa4a2 try 
-SERIAL="0123012301"                   # serial
+PRODUCT_ID="0x0104"                 # idProduct = 0x0728 / 0x0104 multi-function / 0xa4a2 try 
+SERIAL="3193012301"                 # serial
 MANUF="0x02"              			# id
 PRODUCT="RTT Webcam"                # iProduct = RTT Webcam
 
@@ -258,11 +255,11 @@ echo "Creating UVC functions..."
 VIDEO="uvc.0"
 create_uvc configs/c.1 $VIDEO
 echo "uvc.0 functions OK"
-#cd $GADGET/g1
+cd $GADGET/g1
 # Create UAC1 functions --> UAC1 for (USB audio class 1) may need to use UAC2 instead
 echo "Creating UAC2 functions..."
 AUDIO="uac2.0"
-mkdir -p functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
+mkdir functions/$AUDIO			# c_chmask, c_srate, c_ssize, p_chmask, p_srate, p_ssize, req_number
 echo "uac2. functions OK"
 echo $AUDIO_CHANNEL_MASK_CAPTURE > functions/uac2.0/c_chmask
 echo $AUDIO_SAMPLE_RATES_CAPTURE > functions/uac2.0/c_srate
