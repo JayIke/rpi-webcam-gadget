@@ -87,9 +87,16 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 #output = StreamingOutput()
 #picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
+faces = []
 
+def detect_faces(faces):
+    buffer = picam2.capture_buffer("lores")
+    grey = buffer[:s1 * h1].reshape((h1, s1))
+    faces += face_detector.detectMultiScale(grey, 1.1, 3)
 
 def draw_faces(request):
+    detect_faces(faces)
+    faces=[]
     with MappedArray(request, "main") as m:
         for f in faces:
             (x, y, w, h) = [c * n // d for c, n, d in zip(f, (w0, h0) * 2, (w1, h1) * 2)]
@@ -97,7 +104,7 @@ def draw_faces(request):
 
 
 picam2 = Picamera2()
-picam2.start_preview(Preview.QTGL)
+picam2.start_preview(Preview.QT)
 config = picam2.create_preview_configuration(main={"size": (640, 480)},
                                              lores={"size": (320, 240), "format": "YUV420"})
 picam2.configure(config)
@@ -105,11 +112,10 @@ picam2.configure(config)
 (w0, h0) = picam2.stream_configuration("main")["size"]
 (w1, h1) = picam2.stream_configuration("lores")["size"]
 s1 = picam2.stream_configuration("lores")["stride"]
-faces = []
+
 picam2.post_callback = draw_faces
 
 #encoder = H264Encoder(10000000)
-#picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
 output = StreamingOutput()
 picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
@@ -122,9 +128,6 @@ finally:
 
 #start_time = time.monotonic()
 # Run for 10 seconds.
-while True:
-    buffer = picam2.capture_buffer("lores")
-    grey = buffer[:s1 * h1].reshape((h1, s1))
-    faces = face_detector.detectMultiScale(grey, 1.1, 3)
+
 
 
