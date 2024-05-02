@@ -1,1 +1,0 @@
-cmd_/home/jordin/rpi-webcam-gadget/audio/lib/i2s-driver.mod := printf '%s\n'   i2s-driver.o | awk '!x[$$0]++ { print("/home/jordin/rpi-webcam-gadget/audio/lib/"$$0) }' > /home/jordin/rpi-webcam-gadget/audio/lib/i2s-driver.mod
