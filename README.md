@@ -16,6 +16,41 @@ Power Estimate:
 
 Everything about Pipewire: https://github.com/mikeroyal/PipeWire-Guide#installing-pipewire-for-debian
 
+# Demo Setup
+```bash
+#INSTALL:
+sudo apt update
+
+## Mainly following Nina's installs - libav stuff ommitted
+sudo apt install -y git python3-pip python3-opencv opencv-data libopencv-dev libcamera-dev libjpeg-dev libpng-dev libboost-dev libgnutls28-dev openssl libtiff5-dev pybind11-dev meson cmake python3-yaml python3-ply libjasper-dev libwebp-dev libhdf5-dev libhdf5-103 libgtk-3-dev libatlas-base-dev liblapacke-dev libopenblas-dev
+
+## Picamera2
+python3-dev pkg-config python3-picamera2 python3-numpy 
+
+## I think python3-kms++ is important
+sudo apt install -y python3-libcamera python3-kms++
+sudo apt install -y python3-prctl libatlas-base-dev ffmpeg libopenjp2-7 python3-pip
+
+## v4l2/gstreamer
+sudo apt install -y v4l2loopback-dkms v4l2loopback-utils gstreamer1.0-plugins-good gstreamer1.0-tools libyaml-dev python3-jinja2 libx264-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-ugly gstreamer1.0-tools gstreamer1.0-gl gstreamer1.0-gtk3
+
+## more dev packages
+sudo apt install -y zip build-essential graphicsmagick libgraphicsmagick1-dev libatlas-base-dev liblapack-dev libatlas3-base libavcodec-dev libavformat-dev libboost-all-dev libgtk2.0-dev libswscale-dev pkg-config python3-dev
+
+## Solution to QT-plugin or gtk-backend errors: enter this cmd in console only if encountering errors
+QT_QPA_PLATFORM=offscreen
+
+# RUN CODE (currently working is facedetect with boxes drawn):
+cd ~
+git clone https://github.com/JayIke/rpi-webcam-gadget.git
+cd rpi-webcam-gadget/demo
+python3 facedetect_stream.py
+
+# If still not working: QT and glamor graphics related (test current environment before installing these)
+sudo apt install -y python3-pyqt5 python3-opengl
+pip3 install face_recognition (i think this comes default - I didnt use this)
+
+```
 ## Video Processing and Software Stack
 The Big Picture:
 The `Libcamera` software stack is primarily responsible for enabling access to camera data. It bypasses the GPU of which users do not have access to and provides the API interface for applications. Our AI functions are built on top of this framework. The computer vision library, `opencv`, will be responsible for autonomously manipulating the live video stream. Autonomous behavior is defined by the combination of logic, prebuilt ML models, and event loops. However, `opencv` (for some reason) relies on `pycamera2` to grab frames. `v4l2` (Linux video/camera kernel interface) is the low-level interface between user-space and the kernel. The goal is to define a real time processing camera system comprised of the following software grouped by function:
