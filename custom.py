@@ -13,7 +13,7 @@ import time
 face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
 
 last_detection_time = 0
-detection_interval = 1.0  # Run face detection every 1 second
+detection_interval = 2.0  # Run face detection every 1 second
 last_faces = []  # Store the last detected faces
 
 # Web page to display the video stream
@@ -84,7 +84,7 @@ def draw_faces(request):
         if current_time - last_detection_time > detection_interval:
             last_detection_time = current_time
             grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
-            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=3, minSize=(50, 50))
         for (x, y, w, h) in last_faces:
             cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
