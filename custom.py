@@ -7,10 +7,15 @@ import cv2
 from picamera2 import Picamera2, Preview, MappedArray
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
+import time
 
 # Load the face detector
 face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
-req_count = 0
+
+last_detection_time = 0
+detection_interval = 1.0  # Run face detection every 1 second
+last_faces = []  # Store the last detected faces
+
 # Web page to display the video stream
 PAGE = """\
 <html>
@@ -57,7 +62,6 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                         output.condition.wait()
                         frame = output.frame
                         self.wfile.write(b'--FRAME\r\n')
-                        #self.send_header('Content-Type', 'image/png')
                         self.send_header('Content-Type', 'image/jpeg')
                         self.send_header('Content-Length', len(frame))
                         self.end_headers()
@@ -74,28 +78,23 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     daemon_threads = True
 
 def draw_faces(request):
+    global last_detection_time, last_faces
+    current_time = time.time()
     with MappedArray(request, "main") as m:
-        # Downscale the image for faster detection
-        scale_factor = 0.5
-        small_frame = cv2.resize(m.array, (0, 0), fx=scale_factor, fy=scale_factor)
-        grey = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
-        faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-
-        # Scale back up face locations before drawing them
-        for (x, y, w, h) in faces:
-            x, y, w, h = [int(v / scale_factor) for v in (x, y, w, h)]
+        if current_time - last_detection_time > detection_interval:
+            last_detection_time = current_time
+            grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
+            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        for (x, y, w, h) in last_faces:
             cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 picam2 = Picamera2()
 config = picam2.create_preview_configuration(main={"size": (640, 480)})
-#config = picam2.create_preview_configuration(main={"size": (640, 480)},lores={"size": (320, 240), "format": "YUV420"})
 picam2.configure(config)
-
 picam2.post_callback = draw_faces
 output = StreamingOutput()
-#encoder = H264Encoder()
-encoder = MJPEGEncoder(quality=30)
-picam2.start_recording(encoder, FileOutput(output))
+
+picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
 try:
     address = ('', 8000)
