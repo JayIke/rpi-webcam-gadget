@@ -9,14 +9,14 @@ from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 import time
 
-## custom.py --> process and draw directly to main stream
+## custom2.py --> process lowres stream then draw to main
 
 # Load the face detector
 face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
 
 last_detection_time = 0
-detection_interval = 2.0  # Run face detection every 1 second
-last_faces = []  # Store the last detected faces
+detection_interval = 1.0  # Time interval in seconds
+last_faces = []
 
 # Web page to display the video stream
 PAGE = """\
@@ -82,16 +82,25 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 def draw_faces(request):
     global last_detection_time, last_faces
     current_time = time.time()
-    with MappedArray(request, "main") as m:
+    with MappedArray(request, "lores") as lores_map, MappedArray(request, "main") as main_map:
         if current_time - last_detection_time > detection_interval:
             last_detection_time = current_time
-            grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
-            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=3, minSize=(50, 50))
+            y_plane = lores_map.array[:, :, 0]  # YUV's Y plane for grey scale image
+            last_faces = face_detector.detectMultiScale(y_plane, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+        scale_x = main_map.array.shape[1] / lores_map.array.shape[1]
+        scale_y = main_map.array.shape[0] / lores_map.array.shape[0]
+
         for (x, y, w, h) in last_faces:
-            cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            x_main, y_main, w_main, h_main = int(x * scale_x), int(y * scale_y), int(w * scale_x), int(h * scale_y)
+            cv2.rectangle(main_map.array, (x_main, y_main), (x_main + w_main, y_main + h_main), (0, 255, 0), 2)
 
 picam2 = Picamera2()
-config = picam2.create_preview_configuration(main={"size": (640, 480)})
+config = picam2.create_video_configuration(
+    main={"size": (640, 480), "format": "RGB888"},
+    lores={"size": (320, 240), "format": "YUV420"}
+)
+#config = picam2.create_preview_configuration(main={"size": (640, 480)})
 picam2.configure(config)
 picam2.post_callback = draw_faces
 output = StreamingOutput()
