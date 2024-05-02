@@ -10,13 +10,17 @@ from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 import time
 
-## custom.py --> process and draw directly to main stream
+'''
+File: blurred_stream.py
+Description: Post-processed (blurred) MJPEG Streaming Server 
+'''
+# Globals: face_detector, last_detection_time, detection_interval, last_faces
 
-# Load the face detector
+# Load the opencv face detector
 face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
 
 last_detection_time = 0
-detection_interval = 0.6  # Run face detection every 600 ms
+detection_interval = 0.8  # Run face detection every 800 ms
 last_faces = []  # Store the last detected faces
 
 # Web page to display the video stream
@@ -87,13 +91,9 @@ def draw_faces(request):
         if current_time - last_detection_time > detection_interval:
             last_detection_time = current_time
             grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
-            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=6, minSize=(60, 60))
+            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
         
-        #frame = m.array
-        # Convert frame to grayscale for face detection
-        #grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        #faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-
+        
         # Create a mask with the same dimensions as the frame, initialize to black
         mask = np.zeros_like(m.array, dtype=np.uint8)
 
