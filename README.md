@@ -40,11 +40,14 @@ sudo apt install -y zip build-essential graphicsmagick libgraphicsmagick1-dev li
 ## Solution to QT-plugin or gtk-backend errors: enter this cmd in console only if encountering errors
 QT_QPA_PLATFORM=offscreen
 
-# RUN CODE (currently working is facedetect with boxes drawn):
+# Run demo code:
 cd ~
 git clone https://github.com/JayIke/rpi-webcam-gadget.git
 cd rpi-webcam-gadget/demo
-python3 facedetect_stream.py
+## draws faceboxes
+python3 facedetect_stream.py 
+## blurs background
+python3 blurred_stream.py
 
 # If still not working: QT and glamor graphics related (test current environment before installing these)
 sudo apt install -y python3-pyqt5 python3-opengl
