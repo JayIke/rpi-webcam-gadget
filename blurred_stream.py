@@ -4,6 +4,7 @@ import socketserver
 from http import server
 from threading import Condition
 import cv2
+import numpy as np
 from picamera2 import Picamera2, Preview, MappedArray
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
@@ -80,17 +81,24 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     daemon_threads = True
 
 def draw_faces(request):
+    global last_detection_time, last_faces
+    current_time = time.time()
     with MappedArray(request, "main") as m:
+        if current_time - last_detection_time > detection_interval:
+            last_detection_time = current_time
+            grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
+            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
+        
         frame = m.array
         # Convert frame to grayscale for face detection
         grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        #faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         # Create a mask with the same dimensions as the frame, initialize to black
         mask = np.zeros_like(frame, dtype=np.uint8)
 
         # For each detected face, fill the corresponding area in the mask with white
-        for (x, y, w, h) in faces:
+        for (x, y, w, h) in last_faces:
             cv2.rectangle(mask, (x, y), (x + w, y + h), (255, 255, 255), thickness=cv2.FILLED)
 
         # Create a blurred version of the original frame
