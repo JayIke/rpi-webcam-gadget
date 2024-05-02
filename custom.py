@@ -5,7 +5,7 @@ from http import server
 from threading import Condition
 import cv2
 from picamera2 import Picamera2, Preview, MappedArray
-from picamera2.encoders import MJPEGEncoder
+from picamera2.encoders import MJPEGEncoder, H264Encoder
 from picamera2.outputs import FileOutput
 
 # Load the face detector
@@ -19,7 +19,7 @@ PAGE = """\
 </head>
 <body>
 <h1>PiCamera2 MJPEG Streaming Demo</h1>
-<img src="stream.mjpg" width="640" height="480" />
+<img src="stream.h264" width="640" height="480" />
 </body>
 </html>
 """
@@ -47,7 +47,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(content))
             self.end_headers()
             self.wfile.write(content)
-        elif self.path == '/stream.mjpg':
+        elif self.path == '/stream.h264':
             self.send_response(200)
             self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
             self.end_headers()
@@ -57,7 +57,8 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                         output.condition.wait()
                         frame = output.frame
                         self.wfile.write(b'--FRAME\r\n')
-                        self.send_header('Content-Type', 'image/jpeg')
+                        self.send_header('Content-Type', 'image/png')
+                        #self.send_header('Content-Type', 'image/jpeg')
                         self.send_header('Content-Length', len(frame))
                         self.end_headers()
                         self.wfile.write(frame)
@@ -73,6 +74,7 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     daemon_threads = True
 
 def draw_faces(request):
+    
     with MappedArray(request, "main") as m:
         grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
         faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
@@ -80,11 +82,14 @@ def draw_faces(request):
             cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 picam2 = Picamera2()
-config = picam2.create_preview_configuration(main={"size": (640, 480)})
+#config = picam2.create_preview_configuration(main={"size": (640, 480)})
+config = picam2.create_preview_configuration(main={"size": (640, 480)},
+                                             lores={"size": (320, 240), "format": "YUV420"})
 picam2.configure(config)
 picam2.post_callback = draw_faces
 output = StreamingOutput()
-encoder = MJPEGEncoder(quality=85)
+encoder = H264Encoder()
+#encoder = MJPEGEncoder()
 picam2.start_recording(encoder, FileOutput(output))
 
 try:
