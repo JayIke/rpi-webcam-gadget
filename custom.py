@@ -5,7 +5,7 @@ from http import server
 from threading import Condition
 import cv2
 from picamera2 import Picamera2, Preview, MappedArray
-from picamera2.encoders import MJPEGEncoder, H264Encoder
+from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 
 # Load the face detector
@@ -73,21 +73,22 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-def draw_faces(request):  
-    buffer = picam2.capture_buffer("lores")
-    grey = buffer[:s1 * h1].reshape((h1, s1))
-    #faces = face_detector.detectMultiScale(grey, 1.1, 3)
-    faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+def draw_faces(request):
     with MappedArray(request, "main") as m:
-        #grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
-        #faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        # Downscale the image for faster detection
+        scale_factor = 0.5
+        small_frame = cv2.resize(m.array, (0, 0), fx=scale_factor, fy=scale_factor)
+        grey = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
+        faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+        # Scale back up face locations before drawing them
         for (x, y, w, h) in faces:
+            x, y, w, h = [int(v / scale_factor) for v in (x, y, w, h)]
             cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 picam2 = Picamera2()
-#config = picam2.create_preview_configuration(main={"size": (640, 480)})
-config = picam2.create_preview_configuration(main={"size": (640, 480)},
-                                             lores={"size": (320, 240), "format": "YUV420"})
+config = picam2.create_preview_configuration(main={"size": (640, 480)})
+#config = picam2.create_preview_configuration(main={"size": (640, 480)},lores={"size": (320, 240), "format": "YUV420"})
 picam2.configure(config)
 (w0, h0) = picam2.stream_configuration("main")["size"]
 (w1, h1) = picam2.stream_configuration("lores")["size"]
@@ -95,7 +96,7 @@ s1 = picam2.stream_configuration("lores")["stride"]
 picam2.post_callback = draw_faces
 output = StreamingOutput()
 #encoder = H264Encoder()
-encoder = MJPEGEncoder()
+encoder = MJPEGEncoder(quality=30)
 picam2.start_recording(encoder, FileOutput(output))
 
 try:
