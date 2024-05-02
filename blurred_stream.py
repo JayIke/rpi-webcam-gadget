@@ -16,7 +16,7 @@ import time
 face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
 
 last_detection_time = 0
-detection_interval = 0.5  # Run face detection every 1 second
+detection_interval = 0.6  # Run face detection every 600 ms
 last_faces = []  # Store the last detected faces
 
 # Web page to display the video stream
@@ -87,26 +87,26 @@ def draw_faces(request):
         if current_time - last_detection_time > detection_interval:
             last_detection_time = current_time
             grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
-            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
+            last_faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=6, minSize=(60, 60))
         
-        frame = m.array
+        #frame = m.array
         # Convert frame to grayscale for face detection
-        grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         #faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         # Create a mask with the same dimensions as the frame, initialize to black
-        mask = np.zeros_like(frame, dtype=np.uint8)
+        mask = np.zeros_like(m.array, dtype=np.uint8)
 
         # For each detected face, fill the corresponding area in the mask with white
         for (x, y, w, h) in last_faces:
-            cv2.rectangle(mask, (x, y), (x + w, y + h), (255, 255, 255), thickness=cv2.FILLED)
+            cv2.rectangle(mask, (x, y), (x + w, y + h), (255, 255, 255, 0), thickness=cv2.FILLED)
 
         # Create a blurred version of the original frame
-        blurred_frame = cv2.GaussianBlur(frame, (21, 21), 0)
+        blurred_frame = cv2.blur(m.array, (21, 21), 0)
 
         # Combine the blurred frame and the original frame using the mask
         # Only the areas with white in the mask will keep the original pixels
-        final_frame = np.where(mask == np.array([255, 255, 255]), frame, blurred_frame)
+        final_frame = np.where(mask == np.array([255, 255, 255, 0]), m.array, blurred_frame)
 
         # Replace the array's contents with the final frame
         m.array[:] = final_frame
