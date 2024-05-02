@@ -73,19 +73,16 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-def draw_faces(request):
-    req_count += 1
-    if req_count > 5:
-        req_count = 0
-        buffer = picam2.capture_buffer("lores")
-        grey = buffer[:s1 * h1].reshape((h1, s1))
-        #faces = face_detector.detectMultiScale(grey, 1.1, 3)
-        faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-        with MappedArray(request, "main") as m:
-            #grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
-            #faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-            for (x, y, w, h) in faces:
-                cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
+def draw_faces(request):  
+    buffer = picam2.capture_buffer("lores")
+    grey = buffer[:s1 * h1].reshape((h1, s1))
+    #faces = face_detector.detectMultiScale(grey, 1.1, 3)
+    faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    with MappedArray(request, "main") as m:
+        #grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
+        #faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        for (x, y, w, h) in faces:
+            cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 picam2 = Picamera2()
 #config = picam2.create_preview_configuration(main={"size": (640, 480)})
