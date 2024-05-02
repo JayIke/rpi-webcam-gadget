@@ -10,7 +10,7 @@ from picamera2.outputs import FileOutput
 
 # Load the face detector
 face_detector = cv2.CascadeClassifier("/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml")
-
+req_count = 0
 # Web page to display the video stream
 PAGE = """\
 <html>
@@ -19,7 +19,7 @@ PAGE = """\
 </head>
 <body>
 <h1>PiCamera2 MJPEG Streaming Demo</h1>
-<img src="stream.h264" width="640" height="480" />
+<img src="stream.mjpg" width="640" height="480" />
 </body>
 </html>
 """
@@ -47,7 +47,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(content))
             self.end_headers()
             self.wfile.write(content)
-        elif self.path == '/stream.h264':
+        elif self.path == '/stream.mjpg':
             self.send_response(200)
             self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
             self.end_headers()
@@ -57,8 +57,8 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                         output.condition.wait()
                         frame = output.frame
                         self.wfile.write(b'--FRAME\r\n')
-                        self.send_header('Content-Type', 'image/png')
-                        #self.send_header('Content-Type', 'image/jpeg')
+                        #self.send_header('Content-Type', 'image/png')
+                        self.send_header('Content-Type', 'image/jpeg')
                         self.send_header('Content-Length', len(frame))
                         self.end_headers()
                         self.wfile.write(frame)
@@ -74,22 +74,31 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     daemon_threads = True
 
 def draw_faces(request):
-    
-    with MappedArray(request, "main") as m:
-        grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
+    req_count += 1
+    if req_count > 5:
+        req_count = 0
+        buffer = picam2.capture_buffer("lores")
+        grey = buffer[:s1 * h1].reshape((h1, s1))
+        #faces = face_detector.detectMultiScale(grey, 1.1, 3)
         faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-        for (x, y, w, h) in faces:
-            cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        with MappedArray(request, "main") as m:
+            #grey = cv2.cvtColor(m.array, cv2.COLOR_BGR2GRAY)
+            #faces = face_detector.detectMultiScale(grey, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            for (x, y, w, h) in faces:
+                cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 picam2 = Picamera2()
 #config = picam2.create_preview_configuration(main={"size": (640, 480)})
 config = picam2.create_preview_configuration(main={"size": (640, 480)},
                                              lores={"size": (320, 240), "format": "YUV420"})
 picam2.configure(config)
+(w0, h0) = picam2.stream_configuration("main")["size"]
+(w1, h1) = picam2.stream_configuration("lores")["size"]
+s1 = picam2.stream_configuration("lores")["stride"]
 picam2.post_callback = draw_faces
 output = StreamingOutput()
-encoder = H264Encoder()
-#encoder = MJPEGEncoder()
+#encoder = H264Encoder()
+encoder = MJPEGEncoder()
 picam2.start_recording(encoder, FileOutput(output))
 
 try:
