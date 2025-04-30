@@ -11,7 +11,7 @@ Materials:
 Power Estimate:
 1. rpi (idle state) 250mA --> 5.00V * 0.250A  = 1.25W
 2. camera draws 200m      --> 5.00V * 0.200A   = 1.00W
-3. I2S mics (2x) draws about --> 5.00V * 600uA * 2 = 0.006W - a lemon could power this - negligble (10uA sleep)
+3. I2S mics (2x) draws about --> 5.00V * 600uA * 2 = 0.006W (10uA sleep)
 4. buttons/led - low
 
 Everything about Pipewire: https://github.com/mikeroyal/PipeWire-Guide#installing-pipewire-for-debian
